@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
 git unzip curl libzip-dev zip \
 libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
 libonig-dev libxml2-dev libcurl4-openssl-dev libicu-dev \
-&& docker-php-ext-configure gd --with-freetype --with-jpeg \
+zlib1g-dev libwebp-dev libxpm-dev \
+&& docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
 && docker-php-ext-install pdo pdo_mysql zip gd mbstring xml dom simplexml xmlreader xmlwriter curl intl exif bcmath \
 && docker-php-ext-enable gd mbstring xml dom simplexml xmlreader xmlwriter curl intl exif bcmath \
 && php -r "foreach(['gd','dom','xmlreader','xmlwriter'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }" \
@@ -21,6 +22,9 @@ WORKDIR /var/www
 
 
 COPY . .
+
+
+RUN php --ini && php -m | sort | grep -E "^(gd|dom|xmlreader|xmlwriter)$" 
 
 
 RUN composer install --no-dev --optimize-autoloader
