@@ -1,0 +1,16 @@
+.git
+node_modules
+vendor
+storage/*.key
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/framework/testing
+bootstrap/cache/*.php
+public/hot
+public/storage
+public/build
+.env
+.env.*
+*.log
