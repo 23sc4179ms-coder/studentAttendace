@@ -7,7 +7,7 @@ git unzip curl libzip-dev zip \
 libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
 libonig-dev libxml2-dev libcurl4-openssl-dev libicu-dev \
 && docker-php-ext-configure gd --with-freetype --with-jpeg \
-&& docker-php-ext-install pdo pdo_mysql zip gd mbstring xml curl intl exif \
+&& docker-php-ext-install pdo pdo_mysql zip gd mbstring xml dom simplexml xmlreader xmlwriter curl intl exif bcmath \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 
