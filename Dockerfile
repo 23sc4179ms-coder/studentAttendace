@@ -8,6 +8,8 @@ libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
 libonig-dev libxml2-dev libcurl4-openssl-dev libicu-dev \
 && docker-php-ext-configure gd --with-freetype --with-jpeg \
 && docker-php-ext-install pdo pdo_mysql zip gd mbstring xml dom simplexml xmlreader xmlwriter curl intl exif bcmath \
+&& docker-php-ext-enable gd mbstring xml dom simplexml xmlreader xmlwriter curl intl exif bcmath \
+&& php -r "foreach(['gd','dom','xmlreader','xmlwriter'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }" \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
 
