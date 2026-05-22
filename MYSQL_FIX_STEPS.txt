@@ -1,0 +1,66 @@
+MySQL (XAMPP MariaDB) shutdown unexpectedly — Fix Notes
+Date: 2026-03-11
+Machine: Windows + XAMPP (MariaDB 10.4.32)
+
+Symptom
+- XAMPP Control Panel showed: "MySQL shutdown unexpectedly".
+
+Root cause (confirmed)
+- Windows Application event log showed MariaDB aborting with:
+  "Fatal error: Can't open and lock privilege tables: Incorrect file format 'roles_mapping'"
+- This indicates a corrupted / mismatched system privilege table inside the `mysql` system database.
+
+What I checked (to rule out other common causes)
+1) Port conflict
+- Checked port 3306 listeners.
+- Result: port 3306 was NOT being used (no conflicting MySQL service).
+
+2) MariaDB log
+- Looked at: C:\xampp\mysql\data\mysql_error.log
+- The file did not include the fatal line, but a crash dump (mysqld.dmp) existed.
+- The real fatal message was visible in Windows Application events for provider "MariaDB".
+
+Fix applied (safe + keeps your app database)
+Goal: restore clean system tables WITHOUT deleting your project database folder (e.g. `mlgalaraveldb`).
+
+Steps performed
+1) Stop any running `mysqld.exe`
+- If a `mysqld.exe` process is running, stop it first.
+
+2) Back up the corrupted MySQL system database folder
+- Folder backed up:
+  C:\xampp\mysql\data\mysql
+- Renamed/moved to:
+  C:\xampp\mysql\data\mysql_corrupt_20260311_080458
+
+3) Restore a clean `mysql` system database from XAMPP backup
+- Copied from:
+  C:\xampp\mysql\backup\mysql
+- Copied to:
+  C:\xampp\mysql\data\mysql
+
+4) Clear Aria logs (they are safe to regenerate)
+- Deleted:
+  C:\xampp\mysql\data\aria_log.00000001
+  C:\xampp\mysql\data\aria_log_control
+
+Verification
+- Started MariaDB from command line and verified:
+  - `mysqladmin -u root ping` returned: "mysqld is alive"
+  - Port 3306 was listening
+- Then stopped the manual instance so you can start it normally from XAMPP.
+
+Important notes
+- This fix resets/replaces the system `mysql` database (users/privileges/roles).
+  - In most XAMPP setups, `root` has no password by default.
+  - If you previously set a root password, you may need to re-apply it and update Laravel `.env` accordingly.
+- Your application database folder (e.g. C:\xampp\mysql\data\mlgalaraveldb) was NOT deleted.
+
+How to start now
+1) Open XAMPP Control Panel
+2) Start MySQL
+3) Confirm phpMyAdmin works: http://localhost/phpmyadmin
+
+If it fails again
+- Re-check Windows Application log for new MariaDB errors.
+- If you see different corruption errors, the broader "restore full data folder from backup" approach may be needed (but that is more invasive).
