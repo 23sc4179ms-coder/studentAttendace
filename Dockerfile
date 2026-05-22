@@ -8,6 +8,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN set -eux; \
 	apt-get -o Acquire::Retries=3 update; \
 	apt-get install -y --no-install-recommends \
+		$PHPIZE_DEPS \
+		pkg-config \
 		ca-certificates \
 		git \
 		unzip \
