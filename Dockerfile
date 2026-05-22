@@ -52,12 +52,14 @@ WORKDIR /var/www
 # Copy application files
 COPY . .
 
-# Install Composer dependencies (without dev, optimised)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+# Create .env file (from example if exists, otherwise empty)
+RUN if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi
 
-# Set up environment and generate app key
-RUN cp .env.example .env
+# Generate application key (will write to .env)
 RUN php artisan key:generate
+
+# Install Composer dependencies (without dev, optimized)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
 EXPOSE 10000
 
