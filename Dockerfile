@@ -44,9 +44,9 @@ RUN set -eux; \
 RUN set -eux; \
     docker-php-ext-install -j1 intl curl
 
-# Required by maatwebsite/excel (PhpSpreadsheet)
-RUN set -eux; \
-    docker-php-ext-install -j1 xml dom simplexml xmlreader xmlwriter
+# XML/DOM extensions are typically already present in the base PHP image.
+# Compiling them on Render can fail (e.g. xmlreader needing generated DOM headers).
+# We rely on the base image and verify they're available below.
 
 # Verify required extensions are available BEFORE composer install
 RUN set -eux; \
