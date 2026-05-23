@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         unzip \
         curl \
         zip \
+    libpq-dev \
         libzip-dev \
         libpng-dev \
         libjpeg62-turbo-dev \
@@ -24,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo_mysql zip mbstring exif bcmath intl curl
+    && docker-php-ext-install -j1 gd pdo_mysql pdo_pgsql zip mbstring exif bcmath intl curl
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -41,6 +42,6 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-# ⬇️ MIGRATION REMOVED FROM CMD ⬇️
-CMD php artisan key:generate --force --no-interaction && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+# Start: run migrations then serve
+# APP_KEY must be set in Render Environment.
+CMD sh -lc 'php artisan migrate --force --no-interaction; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
