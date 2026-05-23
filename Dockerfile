@@ -29,20 +29,24 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
-
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
-# --- ADDED LINES TO FIX THE PERMISSIONS AND DIRECTORY ISSUE ---
+# Create all necessary Laravel directories with correct permissions
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
-# -----------------------------------------------------------
+
+# Clear any cached configuration (important)
+RUN php artisan config:clear || true
 
 EXPOSE 10000
 
+# Runtime: ensure cache path exists, then start server
 CMD php artisan key:generate --force --no-interaction && \
+    php artisan view:clear && \
+    php artisan cache:clear && \
     php artisan migrate --force --no-interaction || true && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
