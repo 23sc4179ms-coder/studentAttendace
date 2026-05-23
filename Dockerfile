@@ -29,26 +29,24 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*
 
 # PHP extensions
-# Note: we intentionally do NOT compile/install dom/xml* here.
-# The base PHP image already includes core XML modules, and compiling ext-dom on
-# Render often fails due to resource limits.
+# Compiling many extensions in one step often fails on Render due to resource limits.
+# Build them in small steps so logs show exactly which one fails.
+RUN set -eux; \
+    docker-php-ext-install -j1 pdo_mysql pdo_sqlite zip
+
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install -j1 \
-        pdo_mysql \
-        pdo_sqlite \
-        zip \
-        gd \
-        mbstring \
-        exif \
-        bcmath \
-        intl \
-        curl \
-        xml \
-        dom \
-        simplexml \
-        xmlreader \
-        xmlwriter
+    docker-php-ext-install -j1 gd
+
+RUN set -eux; \
+    docker-php-ext-install -j1 mbstring exif bcmath
+
+RUN set -eux; \
+    docker-php-ext-install -j1 intl curl
+
+# Required by maatwebsite/excel (PhpSpreadsheet)
+RUN set -eux; \
+    docker-php-ext-install -j1 xml dom simplexml xmlreader xmlwriter
 
 # Verify required extensions are available BEFORE composer install
 RUN set -eux; \
