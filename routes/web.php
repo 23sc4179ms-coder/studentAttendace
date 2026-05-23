@@ -81,8 +81,11 @@ Route::middleware(['group_middleware','sessionUserAccount','maintenance'])->grou
     
     });
 
-Route::get('/',[UserController::class,'login']);
-Route::post('/',[UserController::class,'login']);
+// Route::get('/',[UserController::class,'login']);
+// Route::post('/',[UserController::class,'login']);
+Route::get('/', function () {
+    return 'Laravel is working!';
+});
 Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
 
