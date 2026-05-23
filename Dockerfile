@@ -57,10 +57,10 @@ COPY . .
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
 # Prepare .env (from example or empty)
-RUN if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi
-
-# Generate key (this will write to .env)
-RUN php artisan key:generate --no-interaction
+RUN set -eux; \
+    if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi; \
+    # Ensure APP_KEY exists so `php artisan key:generate` can update it (Laravel replaces, it won't add)
+    grep -q '^APP_KEY=' .env || echo 'APP_KEY=' >> .env
 
 # Set permissions for Laravel storage & cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
