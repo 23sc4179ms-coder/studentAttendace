@@ -8,87 +8,81 @@ use App\Http\Controllers\PSUController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\CourseController;
-
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ExportController;
-
 use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
+
+// ========== TEST ROUTE (must work even if middleware breaks) ==========
+Route::get('/ping', function () {
+    return 'pong';
+});
 
 Route::get('/health', function () {
     return response('ok', 200);
 });
 
+// ========== ROOT LOGIN ROUTES ==========
+Route::get('/', [UserController::class, 'login']);
+Route::post('/', [UserController::class, 'login']);
 
-Route::get('/home', [StudentController::class,'studentHome'])->name('homeRoute');
-Route::get('/about', [StudentController::class,'studentAbout']);
-
-Route::get('/user_profile', [PagesController::class,'userProfile']);
-Route::get('/user_posts', [PagesController::class,'userPosts']);
-Route::get('/student_courses', [PagesController::class,'studentCourses']);
-Route::get('/demo', [PagesController::class,'demo']);
-
-
+// ========== OTHER PUBLIC ROUTES ==========
+Route::get('/home', [StudentController::class, 'studentHome'])->name('homeRoute');
+Route::get('/about', [StudentController::class, 'studentAbout']);
+Route::get('/user_profile', [PagesController::class, 'userProfile']);
+Route::get('/user_posts', [PagesController::class, 'userPosts']);
+Route::get('/student_courses', [PagesController::class, 'studentCourses']);
+Route::get('/demo', [PagesController::class, 'demo']);
 Route::resource('/changePassword', UserController::class);
+Route::get('/maintenance', [PagesController::class, 'maintenance'])->name('maintenance');
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
-Route::get('/maintenance',[PagesController::class,'maintenance'])->name('maintenance');
+// ========== MIDDLEWARE GROUP (temporarily commented out to avoid 500 from broken middleware) ==========
+// Uncomment after fixing your middleware classes (SessionUserAccountMW, DownForMaintenanceMW, etc.)
+/*
 Route::middleware(['group_middleware','sessionUserAccount','maintenance'])->group(function(){
         
     Route::get('/profile', [ClientController::class,'displayProfile'])->name('profile');
     Route::get('/dashboard', [ClientController::class,'displayDashboard'])->name('greet');
     Route::get('/aboutus', [ClientController::class,'displayAboutUs'])->name('aboutus');
 
-    // AJAX list endpoints MUST be defined before resource routes
-    // so they don't get captured by /student/{student} or /teacher/{teacher}.
+    // AJAX list endpoints
     Route::get('/student/list', [StudentController::class, 'list'])->name('student.list');
     Route::get('/teacher/list', [TeacherController::class, 'list'])->name('teacher.list');
     Route::get('/course/list', [CourseController::class, 'list'])->name('course.list');
 
-    // Enrollment (AJAX)
+    // Enrollment
     Route::post('/course/enroll', [CourseController::class, 'enroll'])->name('course.enroll');
     Route::post('/course/bulk-enroll', [CourseController::class, 'bulkEnroll'])->name('course.bulkEnroll');
 
-    // Admin UI: bulk enroll page
+    // Admin UI
     Route::get('/enrollstudent', [CourseController::class, 'enrollStudentIndex'])->name('enrollstudent.index');
-    Route::get('/enrollstudent/students', [CourseController::class, 'enrollStudentStudents'])
-        ->name('enrollstudent.students');
+    Route::get('/enrollstudent/students', [CourseController::class, 'enrollStudentStudents'])->name('enrollstudent.students');
 
-    // AJAX view endpoints (JSON) for modals
+    // AJAX view endpoints
     Route::get('/student/{id}/json', [StudentController::class, 'showJson'])->name('student.showJson');
     Route::get('/teacher/{id}/json', [TeacherController::class, 'showJson'])->name('teacher.showJson');
 
     // Export Excel
-    Route::get('/export/students-teachers', [ExportController::class, 'studentsTeachers'])
-        ->name('export.studentsTeachers');
+    Route::get('/export/students-teachers', [ExportController::class, 'studentsTeachers'])->name('export.studentsTeachers');
 
-    Route::resource('/student',StudentController::class);
+    Route::resource('/student', StudentController::class);
     Route::resource('/teacher', TeacherController::class);
-    // Student dashboard AJAX: course details (teacher + classmates)
-    Route::get('/studentDashboard/course/{course}/details', [UserController::class, 'studentCourseDetails'])
-        ->name('studentDashboard.course.details');
+    
+    // Student dashboard AJAX
+    Route::get('/studentDashboard/course/{course}/details', [UserController::class, 'studentCourseDetails'])->name('studentDashboard.course.details');
 
     Route::resource('/studentDashboard', UserController::class);
     Route::get('/manageStudents', [StudentController::class, 'manageStudents'])->name('manageStudents');
     Route::get('/teacherDashboard', [UserController::class, 'teacherDashboard'])->name('teacherDashboard.index');
     Route::get('/teacherDashboard/{id}/edit', [UserController::class, 'edit'])->name('teacherDashboard.edit');
     Route::put('/teacherDashboard/{id}', [UserController::class, 'update'])->name('teacherDashboard.update');
-    Route::get('/teacherDashboard/course/{course}/enrolled', [UserController::class, 'enrolledStudents'])
-        ->name('teacherDashboard.course.enrolled');
+    Route::get('/teacherDashboard/course/{course}/enrolled', [UserController::class, 'enrolledStudents'])->name('teacherDashboard.course.enrolled');
     Route::resource('/degree', DegreeController::class);
     Route::resource('/course', CourseController::class)->except(['show']);
-
-    
-    });
-
-// Route::get('/',[UserController::class,'login']);
-// Route::post('/',[UserController::class,'login']);
-Route::get('/ping', function() {
-    return 'Laravel is working!';
 });
-Route::get('/logout', [UserController::class, 'logout'])->name('logout');
-
-
+*/
 
 // Route::get('/', function () {
 //    return view('welcome');
