@@ -16,6 +16,10 @@ use App\Http\Controllers\ExportController;
 use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/health', function () {
+    return response('ok', 200);
+});
+
 
 Route::get('/home', [StudentController::class,'studentHome'])->name('homeRoute');
 Route::get('/about', [StudentController::class,'studentAbout']);
