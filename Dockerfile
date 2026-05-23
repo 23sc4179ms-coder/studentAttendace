@@ -68,5 +68,6 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-# Start command: ensure key exists, run migrations (optional), serve
-CMD sh -lc 'if [ -z "${APP_KEY:-}" ]; then php artisan key:generate --force --no-interaction; fi; php artisan migrate --force --no-interaction || true; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+# Start command: run migrations (optional), then serve
+# APP_KEY must be provided via Render Environment variables.
+CMD sh -lc 'php artisan migrate --force --no-interaction || true; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
