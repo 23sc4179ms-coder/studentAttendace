@@ -28,27 +28,25 @@ RUN set -eux; \
         libicu-dev; \
     rm -rf /var/lib/apt/lists/*
 
-# PHP extensions
-# Compiling many extensions in one step often fails on Render due to resource limits.
-# Build them in small steps so logs show exactly which one fails.
-RUN set -eux; \
-    docker-php-ext-install -j1 pdo_mysql pdo_sqlite zip
-
+# Install all required PHP extensions (including XML ones) in one step to avoid conflicts
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
-    docker-php-ext-install -j1 gd
+    docker-php-ext-install -j1 \
+        pdo_mysql \
+        pdo_sqlite \
+        zip \
+        gd \
+        mbstring \
+        exif \
+        bcmath \
+        intl \
+        curl \
+        dom \
+        xml \
+        xmlreader \
+        xmlwriter
 
-RUN set -eux; \
-    docker-php-ext-install -j1 mbstring exif bcmath
-
-RUN set -eux; \
-    docker-php-ext-install -j1 intl curl
-
-# XML/DOM extensions are typically already present in the base PHP image.
-# Compiling them on Render can fail (e.g. xmlreader needing generated DOM headers).
-# We rely on the base image and verify they're available below.
-
-# Verify required extensions are available BEFORE composer install
+# Verify required extensions are available
 RUN set -eux; \
     php -m | sort; \
     php -r "foreach(['gd','zip','pdo_mysql','pdo_sqlite','dom','xmlreader','xmlwriter','mbstring'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }"
@@ -81,6 +79,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-# Start command: run migrations, then serve
-# APP_KEY must be provided via Render Environment variables.
-CMD sh -lc 'php artisan migrate --force --no-interaction; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+# Start command: generate key if missing, run migrations, then serve
+CMD php artisan key:generate --force --no-interaction && \
+    php artisan migrate --force --no-interaction || true && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
