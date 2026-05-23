@@ -28,7 +28,7 @@ RUN set -eux; \
         libicu-dev; \
     rm -rf /var/lib/apt/lists/*
 
-# Install all required PHP extensions (including XML ones) in one step to avoid conflicts
+# Install extensions in correct order (dom first, then xmlreader/writer)
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j1 \
@@ -40,13 +40,17 @@ RUN set -eux; \
         exif \
         bcmath \
         intl \
-        curl \
-        dom \
-        xml \
-        xmlreader \
-        xmlwriter
+        curl
 
-# Verify required extensions are available
+# Install dom (required for xmlreader/writer headers)
+RUN set -eux; \
+    docker-php-ext-install -j1 dom
+
+# Install xmlreader and xmlwriter (now dom headers are available)
+RUN set -eux; \
+    docker-php-ext-install -j1 xmlreader xmlwriter
+
+# Verify required extensions
 RUN set -eux; \
     php -m | sort; \
     php -r "foreach(['gd','zip','pdo_mysql','pdo_sqlite','dom','xmlreader','xmlwriter','mbstring'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }"
@@ -62,24 +66,24 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
-# Prepare .env (ensure it exists and has APP_KEY placeholder)
+# Prepare .env
 RUN set -eux; \
     if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi; \
     grep -q '^APP_KEY=' .env || echo 'APP_KEY=' >> .env
 
-# SQLite fallback file (only used if DB_CONNECTION=sqlite)
+# SQLite fallback file
 RUN set -eux; \
     mkdir -p /var/www/database; \
     if [ ! -f /var/www/database/database.sqlite ]; then touch /var/www/database/database.sqlite; fi; \
     chown -R www-data:www-data /var/www/database
 
-# Set permissions for Laravel storage & cache
+# Set permissions
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 10000
 
-# Start command: generate key if missing, run migrations, then serve
+# Start command
 CMD php artisan key:generate --force --no-interaction && \
     php artisan migrate --force --no-interaction || true && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
