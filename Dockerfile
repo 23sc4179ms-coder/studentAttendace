@@ -41,7 +41,7 @@ RUN set -eux; \
         xmlwriter \
         intl \
         curl; \
-    # Quick verification (optional, but helpful)
+    # Quick verification (optional)
     php -m | grep -E "gd|zip|dom|xmlreader|xmlwriter|mbstring"
 
 # Install Composer
@@ -52,14 +52,14 @@ WORKDIR /var/www
 # Copy application files
 COPY . .
 
+# Install Composer dependencies FIRST (required for artisan)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+
 # Create .env file (from example if exists, otherwise empty)
 RUN if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi
 
-# Generate application key (will write to .env)
+# Generate application key (now vendor/autoload.php exists)
 RUN php artisan key:generate
-
-# Install Composer dependencies (without dev, optimized)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
 EXPOSE 10000
 
