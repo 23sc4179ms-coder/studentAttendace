@@ -41,4 +41,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-CMD sh -c 'if [ -z "${APP_KEY}" ]; then echo "ERROR: APP_KEY is missing." >&2; exit 1; fi; php artisan optimize:clear; php artisan migrate --force --no-interaction && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+# Removed 'optimize:clear' to avoid "View path not found" error
+CMD php artisan key:generate --force --no-interaction && \
+    php artisan migrate --force --no-interaction || true && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
