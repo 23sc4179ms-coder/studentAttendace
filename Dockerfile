@@ -1,4 +1,3 @@
-# Dockerfile
 FROM php:8.2-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -22,11 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libicu-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js 20.x
+# Install Node.js (required for building assets)
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y nodejs
 
-# Install PHP extensions (explicitly enable zip for Excel)
+# Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j1 gd pdo_mysql zip mbstring exif bcmath intl curl
 
@@ -38,13 +37,13 @@ WORKDIR /var/www
 # Copy application files
 COPY . .
 
-# Install Composer dependencies
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
 # Install Node dependencies and build frontend assets
 RUN npm install && npm run build
 
-# Create necessary Laravel directories and set permissions
+# Create necessary directories and set permissions
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
@@ -52,7 +51,7 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 
 EXPOSE 10000
 
-# Runtime commands
+# Runtime: ensure view cache directory exists, then start server
 CMD mkdir -p /var/www/storage/framework/views && \
     export VIEW_COMPILED_PATH=/var/www/storage/framework/views && \
     php artisan key:generate --force --no-interaction && \
