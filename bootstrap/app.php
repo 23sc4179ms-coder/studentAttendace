@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         //global middleware
         $middleware->append([
+            \App\Http\Middleware\ReportExceptionMW::class,
             \App\Http\Middleware\PromotionMW::class,
         ]);
         //route middleware
