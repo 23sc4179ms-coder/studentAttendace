@@ -43,4 +43,4 @@ EXPOSE 10000
 
 # Start: run migrations then serve
 # APP_KEY must be set in Render Environment.
-CMD sh -lc 'php artisan migrate --force --no-interaction; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+CMD sh -lc 'php artisan config:clear; php artisan migrate --force --no-interaction && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
