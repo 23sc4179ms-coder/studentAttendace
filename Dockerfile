@@ -33,23 +33,18 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
-# Create all required Laravel directories
+# Build‑time directory creation
 RUN mkdir -p storage/framework/{sessions,views,cache} \
     && mkdir -p bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Set the view compiled path explicitly in .env to avoid realpath issues
-RUN echo "VIEW_COMPILED_PATH=/var/www/storage/framework/views" >> .env
-
-# Clear any cached configuration that might point to the wrong path
-RUN php artisan config:clear || true
-
 EXPOSE 10000
 
-# Runtime: ensure the view cache path is set and clear view cache before serving
-CMD php artisan key:generate --force --no-interaction && \
+# Runtime: ensure directory exists, set the compiled path explicitly, then serve
+CMD mkdir -p /var/www/storage/framework/views && \
+    export VIEW_COMPILED_PATH=/var/www/storage/framework/views && \
+    php artisan key:generate --force --no-interaction && \
     php artisan view:clear && \
-    php artisan cache:clear && \
     php artisan migrate --force --no-interaction || true && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
