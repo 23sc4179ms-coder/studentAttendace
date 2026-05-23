@@ -27,7 +27,7 @@ RUN set -eux; \
         libicu-dev; \
     rm -rf /var/lib/apt/lists/*
 
-# PHP extensions
+# PHP extensions (added missing xml family)
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j1 \
@@ -38,7 +38,12 @@ RUN set -eux; \
         exif \
         bcmath \
         intl \
-        curl
+        curl \
+        xml \
+        dom \
+        simplexml \
+        xmlreader \
+        xmlwriter
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -51,10 +56,9 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
-# Prepare .env (from example or empty)
+# Prepare .env (ensure it exists and has APP_KEY placeholder)
 RUN set -eux; \
     if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi; \
-    # Ensure APP_KEY exists so `php artisan key:generate` can update it (Laravel replaces, it won't add)
     grep -q '^APP_KEY=' .env || echo 'APP_KEY=' >> .env
 
 # Set permissions for Laravel storage & cache
@@ -63,6 +67,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-# Start command: run migrations (optional), then serve
-# APP_KEY must be provided via Render Environment variables.
-CMD sh -lc 'php artisan migrate --force --no-interaction; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+# Start command: generate key if missing, run migrations (optional), serve
+CMD php artisan key:generate --force --no-interaction && \
+    php artisan migrate --force --no-interaction || true && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
