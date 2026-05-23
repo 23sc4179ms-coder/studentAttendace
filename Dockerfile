@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM php:8.2-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -43,7 +43,12 @@ RUN set -eux; \
         exif \
         bcmath \
         intl \
-        curl
+        curl \
+        xml \
+        dom \
+        simplexml \
+        xmlreader \
+        xmlwriter
 
 # Verify required extensions are available BEFORE composer install
 RUN set -eux; \
