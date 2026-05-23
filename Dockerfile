@@ -2,6 +2,10 @@ FROM php:8.4-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Make Laravel log to container logs (Render captures stderr)
+ENV LOG_CHANNEL=stderr
+ENV LOG_LEVEL=debug
+
 # System dependencies
 RUN set -eux; \
     apt-get -o Acquire::Retries=3 update; \
@@ -65,6 +69,4 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 EXPOSE 10000
 
 # Start command: ensure key exists, run migrations (optional), serve
-CMD php artisan key:generate --force --no-interaction && \
-    php artisan migrate --force --no-interaction || true && \
-    php artisan serve --host=0.0.0.0 --port=$PORT
+CMD sh -lc 'if [ -z "${APP_KEY:-}" ]; then php artisan key:generate --force --no-interaction; fi; php artisan migrate --force --no-interaction || true; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
