@@ -28,7 +28,7 @@ RUN set -eux; \
         libicu-dev; \
     rm -rf /var/lib/apt/lists/*
 
-# Install extensions in correct order (dom first, then xmlreader/writer)
+# Install all required PHP extensions (no dom/xmlreader/xmlwriter)
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j1 \
@@ -42,18 +42,10 @@ RUN set -eux; \
         intl \
         curl
 
-# Install dom (required for xmlreader/writer headers)
-RUN set -eux; \
-    docker-php-ext-install -j1 dom
-
-# Install xmlreader and xmlwriter (now dom headers are available)
-RUN set -eux; \
-    docker-php-ext-install -j1 xmlreader xmlwriter
-
-# Verify required extensions
+# Verify only essential extensions (remove XML checks)
 RUN set -eux; \
     php -m | sort; \
-    php -r "foreach(['gd','zip','pdo_mysql','pdo_sqlite','dom','xmlreader','xmlwriter','mbstring'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }"
+    php -r "foreach(['gd','zip','pdo_mysql','pdo_sqlite','mbstring'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }"
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -83,7 +75,7 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-# Start command
+# Start command: generate key if missing, run migrations, then serve
 CMD php artisan key:generate --force --no-interaction && \
     php artisan migrate --force --no-interaction || true && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
