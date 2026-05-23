@@ -37,11 +37,6 @@ RUN set -eux; \
         mbstring \
         exif \
         bcmath \
-        xml \
-        dom \
-        simplexml \
-        xmlreader \
-        xmlwriter \
         intl \
         curl
 
@@ -70,4 +65,4 @@ EXPOSE 10000
 
 # Start command: run migrations (optional), then serve
 # APP_KEY must be provided via Render Environment variables.
-CMD sh -lc 'php artisan migrate --force --no-interaction || true; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+CMD sh -lc 'php artisan migrate --force --no-interaction; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
