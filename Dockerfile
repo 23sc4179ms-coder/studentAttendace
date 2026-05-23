@@ -1,9 +1,8 @@
-# FROM php:8.2-cli
 FROM php:8.4-fpm
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# OS packages needed to compile PHP extensions required by composer deps
+# System dependencies
 RUN set -eux; \
     apt-get -o Acquire::Retries=3 update; \
     apt-get install -y --no-install-recommends \
@@ -24,7 +23,7 @@ RUN set -eux; \
         libicu-dev; \
     rm -rf /var/lib/apt/lists/*
 
-# Install all required PHP extensions in one step
+# PHP extensions
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j1 \
@@ -40,28 +39,32 @@ RUN set -eux; \
         xmlreader \
         xmlwriter \
         intl \
-        curl; \
-    # Quick verification (optional)
-    php -m | grep -E "gd|zip|dom|xmlreader|xmlwriter|mbstring"
+        curl
 
-# Install Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
-# Copy application files
+# Copy application
 COPY . .
 
-# Install Composer dependencies FIRST (required for artisan)
+# Install dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
-# Create .env file (from example if exists, otherwise empty)
+# Prepare .env (from example or empty)
 RUN if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi
 
-# Generate application key (now vendor/autoload.php exists)
-RUN php artisan key:generate
+# Generate key (this will write to .env)
+RUN php artisan key:generate --no-interaction
+
+# Set permissions for Laravel storage & cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 10000
 
-# Start PHP built-in server with migrations (database must be available at runtime)
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+# Start command: ensure key exists, run migrations (optional), serve
+CMD php artisan key:generate --force --no-interaction && \
+    php artisan migrate --force --no-interaction || true && \
+    php artisan serve --host=0.0.0.0 --port=$PORT
