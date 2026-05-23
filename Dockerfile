@@ -29,19 +29,20 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
+
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
 
-RUN if [ ! -f .env ]; then touch .env; fi && \
-    grep -q '^APP_KEY=' .env || echo 'APP_KEY=' >> .env
-
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
-    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# --- ADDED LINES TO FIX THE PERMISSIONS AND DIRECTORY ISSUE ---
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+    && mkdir -p bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+# -----------------------------------------------------------
 
 EXPOSE 10000
 
-# Removed 'optimize:clear' to avoid "View path not found" error
 CMD php artisan key:generate --force --no-interaction && \
     php artisan migrate --force --no-interaction || true && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
