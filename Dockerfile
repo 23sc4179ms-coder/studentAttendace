@@ -41,6 +41,4 @@ RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
 
 EXPOSE 10000
 
-# Start: run migrations then serve
-# APP_KEY must be set in Render Environment.
-CMD sh -lc 'if [ -z "${APP_KEY}" ]; then echo "ERROR: APP_KEY is missing. Set APP_KEY in Render Environment (Laravel app key)." >&2; exit 1; fi; php artisan optimize:clear; php artisan migrate --force --no-interaction && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
+CMD sh -c 'if [ -z "${APP_KEY}" ]; then echo "ERROR: APP_KEY is missing." >&2; exit 1; fi; php artisan optimize:clear; php artisan migrate --force --no-interaction && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'

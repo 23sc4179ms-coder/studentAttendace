@@ -2,8 +2,8 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
-
+            'maintenance' => \App\Http\Middleware\DownForMaintenanceMW::class,
+            'sessionUserAccount' => \App\Http\Middleware\SessionUserAccountMW::class,
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -11,28 +11,26 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->group('group_middleware', [
+        //middleware group
+        $middleware->group('group_middleware',[
             \App\Http\Middleware\MiddleWareOne::class,
             \App\Http\Middleware\MiddleWareTwo::class,
             \App\Http\Middleware\DownForMaintenanceMW::class,
         ]);
-
+        //global middleware
         $middleware->append([
             \App\Http\Middleware\ReportExceptionMW::class,
             \App\Http\Middleware\PromotionMW::class,
         ]);
-
+        //route middleware
         $middleware->alias([
-            'maintenance' => \App\Http\Middleware\DownForMaintenanceMW::class,
-            'sessionUserAccount' => \App\Http\Middleware\SessionUserAccountMW::class,
+            'maintenance' => '\App\Http\Middleware\DownForMaintenanceMW::class',
+            'sessionUserAccount' => '\App\Http\Middleware\SessionUserAccountMW::class',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })
-    ->create();
-
+    })->create();
 
     
-
     
