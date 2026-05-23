@@ -17,6 +17,7 @@ RUN set -eux; \
         unzip \
         curl \
         zip \
+        libsqlite3-dev \
         libzip-dev \
         libpng-dev \
         libjpeg62-turbo-dev \
@@ -27,23 +28,27 @@ RUN set -eux; \
         libicu-dev; \
     rm -rf /var/lib/apt/lists/*
 
-# PHP extensions (added missing xml family)
+# PHP extensions
+# Note: we intentionally do NOT compile/install dom/xml* here.
+# The base PHP image already includes core XML modules, and compiling ext-dom on
+# Render often fails due to resource limits.
 RUN set -eux; \
     docker-php-ext-configure gd --with-freetype --with-jpeg; \
     docker-php-ext-install -j1 \
         pdo_mysql \
+        pdo_sqlite \
         zip \
         gd \
         mbstring \
         exif \
         bcmath \
         intl \
-        curl \
-        xml \
-        dom \
-        simplexml \
-        xmlreader \
-        xmlwriter
+        curl
+
+# Verify required extensions are available BEFORE composer install
+RUN set -eux; \
+    php -m | sort; \
+    php -r "foreach(['gd','zip','pdo_mysql','pdo_sqlite','dom','xmlreader','xmlwriter','mbstring'] as $e){ if(!extension_loaded($e)){ fwrite(STDERR, 'Missing PHP extension: '.$e.PHP_EOL); exit(1);} }"
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -61,13 +66,18 @@ RUN set -eux; \
     if [ -f .env.example ]; then cp .env.example .env; else touch .env; fi; \
     grep -q '^APP_KEY=' .env || echo 'APP_KEY=' >> .env
 
+# SQLite fallback file (only used if DB_CONNECTION=sqlite)
+RUN set -eux; \
+    mkdir -p /var/www/database; \
+    if [ ! -f /var/www/database/database.sqlite ]; then touch /var/www/database/database.sqlite; fi; \
+    chown -R www-data:www-data /var/www/database
+
 # Set permissions for Laravel storage & cache
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
     chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 10000
 
-# Start command: generate key if missing, run migrations (optional), serve
-CMD php artisan key:generate --force --no-interaction && \
-    php artisan migrate --force --no-interaction || true && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+# Start command: run migrations, then serve
+# APP_KEY must be provided via Render Environment variables.
+CMD sh -lc 'php artisan migrate --force --no-interaction; php artisan serve --host=0.0.0.0 --port=${PORT:-10000}'
