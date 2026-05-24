@@ -213,6 +213,7 @@ class StudentController extends Controller
                     'first_name' => $request->first_name,
                     'middle_name' => $request->middle_name,
                     'last_name' => $request->last_name,
+                    'email' => $request->email,
                     'contact_no' => $request->contact_no,
                     'degree_id' => $request->degree_id,
                 ]);
@@ -401,6 +402,7 @@ class StudentController extends Controller
         'first_name' => $validated['first_name'],
         'middle_name' => $validated['middle_name'] ?? null,
         'last_name' => $validated['last_name'],
+                'email' => $email,
         'contact_no' => $validated['contact_no'],
         'degree_id' => $validated['degree_id'],
     ]);
