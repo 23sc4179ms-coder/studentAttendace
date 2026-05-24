@@ -51,10 +51,8 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 
 EXPOSE 10000
 
-# Runtime: ensure view cache directory exists, then start server
+# Runtime: start the app quickly so Render can serve the login page and assets.
+# Keep APP_KEY and migrations managed by Render environment/deploy settings.
 CMD mkdir -p /var/www/storage/framework/views && \
     export VIEW_COMPILED_PATH=/var/www/storage/framework/views && \
-    php artisan key:generate --force --no-interaction && \
-    php artisan view:clear && \
-    php artisan migrate --force --no-interaction || true && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
