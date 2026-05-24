@@ -218,13 +218,19 @@ class StudentController extends Controller
                 ]);
             });
         } catch (\Throwable $e) {
+            // Log full exception for server-side inspection
             Log::error('Student create failed', [
                 'message' => $e->getMessage(),
+                'exception' => $e instanceof \Throwable ? $e->getTraceAsString() : null,
             ]);
 
+            // TEMP DEBUG: return exception details in JSON for AJAX calls so we can diagnose on Render.
+            // Remove or restrict this before production use.
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'message' => 'Failed to create student. Check server logs.',
+                    'error' => $e->getMessage(),
+                    'trace' => str_split($e->getTraceAsString(), 1000) // split long traces
                 ], 500);
             }
 
