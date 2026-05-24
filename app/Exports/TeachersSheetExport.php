@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\teacher;
+use App\Models\Teacher;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -12,11 +12,11 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 class TeachersSheetExport implements FromCollection, WithHeadings, WithMapping, WithTitle
 {
     /**
-     * @return Collection<int, teacher>
+     * @return Collection<int, Teacher>
      */
     public function collection(): Collection
     {
-        return teacher::with(['userAccount'])
+        return Teacher::with(['userAccount'])
             ->orderBy('last_name')
             ->orderBy('first_name')
             ->get();
@@ -38,7 +38,7 @@ class TeachersSheetExport implements FromCollection, WithHeadings, WithMapping, 
     }
 
     /**
-     * @param teacher $teacher
+    * @param Teacher $teacher
      * @return array<int, string|null>
      */
     public function map($teacher): array

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Degree;
 use App\Models\Student;
-use App\Models\teacher;
+use App\Models\Teacher;
 use App\Models\UserAccount;
 use App\Models\Course;
 use Illuminate\Support\Facades\DB;
@@ -69,9 +69,9 @@ class StudentController extends Controller
     public function manageStudents() {
         $students = Student::with(['degree', 'userAccount'])->paginate(5);
         $degrees = Degree::orderBy('degree_name')->get();
-        $teachers = teacher::paginate(5);
+        $teachers = Teacher::paginate(5);
         $courses = Course::orderBy('course_name')->get();
-        $allTeachers = teacher::orderBy('first_name')->orderBy('last_name')->get();
+        $allTeachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
         $logged_user = Session::get('logged_user');
         $logged_role = Session::get('logged_role');
         return view('student', compact('students', 'degrees', 'teachers', 'courses', 'allTeachers', 'logged_user', 'logged_role'));
@@ -95,9 +95,9 @@ class StudentController extends Controller
             return redirect('manageStudents');
           }
                     elseif ($logged_role === 'teacher') {
-                        $teachers = teacher::paginate(5);
+                        $teachers = Teacher::paginate(5);
                         $courses = Course::orderBy('course_name')->get();
-                        $allTeachers = teacher::orderBy('first_name')->orderBy('last_name')->get();
+                        $allTeachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
                         return view('student', compact('students', 'degrees', 'teachers', 'courses', 'allTeachers', 'logged_user', 'logged_role'));
                 }
            else {

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\CourseEnrolled;
 use App\Models\Student;
-use App\Models\teacher;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -153,7 +153,7 @@ class CourseController extends Controller
 
         $teacherId = null;
         if ($role === 'teacher') {
-            $teacher = teacher::where('user_account_id', $loggedId)->first();
+            $teacher = Teacher::where('user_account_id', $loggedId)->first();
             if (!$teacher) {
                 return response()->json(['message' => 'Teacher profile not found.'], 422);
             }
@@ -205,7 +205,7 @@ class CourseController extends Controller
         }
 
         $courses = Course::orderBy('course_name')->get();
-        $teachers = teacher::orderBy('first_name')->orderBy('last_name')->get();
+        $teachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
 
         return view('enrollstudent', compact('courses', 'teachers'));
     }

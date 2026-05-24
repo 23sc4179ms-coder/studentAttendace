@@ -20,10 +20,10 @@ class Degree extends Model
     }
 
     /**
-     * @return HasMany<teacher, Degree>
+     * @return HasMany<Teacher, Degree>
      */
     public function teachers()
     {
-        return $this->hasMany(teacher::class, 'degree_id');
+        return $this->hasMany(Teacher::class, 'degree_id');
     }
 }

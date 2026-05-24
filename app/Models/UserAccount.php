@@ -20,6 +20,6 @@ class UserAccount extends Model
         return $this->hasOne(Student::class,'user_account_id');
     }
     public function teacher(){
-        return $this->hasOne(teacher::class,'user_account_id');
+        return $this->hasOne(Teacher::class,'user_account_id');
     }
 }

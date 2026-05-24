@@ -6,7 +6,7 @@ use App\Models\Student;
 use App\Models\Degree;
 use App\Models\Course;
 use App\Models\CourseEnrolled;
-use App\Models\teacher;
+use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
@@ -101,7 +101,7 @@ class UserController extends Controller
             return redirect('/');
         }
 
-        $teacher = teacher::where('user_account_id', $userId)->first();
+        $teacher = Teacher::where('user_account_id', $userId)->first();
         $courses = collect();
         if ($teacher) {
             $courses = Course::query()
@@ -131,7 +131,7 @@ class UserController extends Controller
             abort(403);
         }
 
-        $teacher = teacher::where('user_account_id', $userId)->first();
+        $teacher = Teacher::where('user_account_id', $userId)->first();
         if (!$teacher) {
             abort(403);
         }
@@ -174,7 +174,7 @@ class UserController extends Controller
 
         $teacherName = null;
         if ($enrollment->teacher_id) {
-            $t = teacher::find($enrollment->teacher_id);
+            $t = Teacher::find($enrollment->teacher_id);
             if ($t) {
                 $teacherName = trim($t->first_name . ' ' . ($t->middle_name ?? '') . ' ' . $t->last_name);
             }
