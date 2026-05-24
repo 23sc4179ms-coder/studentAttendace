@@ -38,6 +38,45 @@ Route::resource('/changePassword', UserController::class);
 Route::get('/maintenance', [PagesController::class, 'maintenance'])->name('maintenance');
 Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
+// ========== ACTIVE APP ROUTES ==========
+// These routes are registered without the broken middleware group so named routes
+// used by redirects and views are always available on Render.
+Route::get('/profile', [ClientController::class, 'displayProfile'])->name('profile');
+Route::get('/dashboard', [ClientController::class, 'displayDashboard'])->name('greet');
+Route::get('/aboutus', [ClientController::class, 'displayAboutUs'])->name('aboutus');
+
+Route::get('/student/list', [StudentController::class, 'list'])->name('student.list');
+Route::get('/teacher/list', [TeacherController::class, 'list'])->name('teacher.list');
+Route::get('/course/list', [CourseController::class, 'list'])->name('course.list');
+
+Route::post('/course/enroll', [CourseController::class, 'enroll'])->name('course.enroll');
+Route::post('/course/bulk-enroll', [CourseController::class, 'bulkEnroll'])->name('course.bulkEnroll');
+
+Route::get('/enrollstudent', [CourseController::class, 'enrollStudentIndex'])->name('enrollstudent.index');
+Route::get('/enrollstudent/students', [CourseController::class, 'enrollStudentStudents'])->name('enrollstudent.students');
+
+Route::get('/student/{id}/json', [StudentController::class, 'showJson'])->name('student.showJson');
+Route::get('/teacher/{id}/json', [TeacherController::class, 'showJson'])->name('teacher.showJson');
+
+Route::get('/export/students-teachers', [ExportController::class, 'studentsTeachers'])->name('export.studentsTeachers');
+
+Route::resource('/student', StudentController::class);
+Route::resource('/teacher', TeacherController::class);
+
+Route::get('/studentDashboard/course/{course}/details', [UserController::class, 'studentCourseDetails'])
+    ->name('studentDashboard.course.details');
+Route::resource('/studentDashboard', UserController::class);
+
+Route::get('/manageStudents', [StudentController::class, 'manageStudents'])->name('manageStudents');
+Route::get('/teacherDashboard', [UserController::class, 'teacherDashboard'])->name('teacherDashboard.index');
+Route::get('/teacherDashboard/{id}/edit', [UserController::class, 'edit'])->name('teacherDashboard.edit');
+Route::put('/teacherDashboard/{id}', [UserController::class, 'update'])->name('teacherDashboard.update');
+Route::get('/teacherDashboard/course/{course}/enrolled', [UserController::class, 'enrolledStudents'])
+    ->name('teacherDashboard.course.enrolled');
+
+Route::resource('/degree', DegreeController::class);
+Route::resource('/course', CourseController::class)->except(['show']);
+
 // ========== MIDDLEWARE GROUP (temporarily commented out to avoid 500 from broken middleware) ==========
 // Uncomment after fixing your middleware classes (SessionUserAccountMW, DownForMaintenanceMW, etc.)
 /*
