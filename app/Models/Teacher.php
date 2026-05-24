@@ -21,4 +21,3 @@ class Teacher extends Model
         return $this->belongsTo(UserAccount::class, 'user_account_id');
     }
 }
-
