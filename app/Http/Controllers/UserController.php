@@ -70,7 +70,7 @@ class UserController extends Controller
         }
 
         if ($logged_role === 'admin') {
-            return redirect()->route('student.index');
+            return redirect()->route('manageStudents');
         }
 
         return redirect('/');
@@ -96,7 +96,7 @@ class UserController extends Controller
                 return redirect()->route('studentDashboard.index');
             }
             if ($logged_role === 'admin') {
-                return redirect()->route('student.index');
+                return redirect()->route('manageStudents');
             }
             return redirect('/');
         }
@@ -273,7 +273,7 @@ class UserController extends Controller
                 } elseif ($user->role === 'teacher') {
                     $redirect = route('teacherDashboard.index');
                 } elseif ($user->role === 'admin') {
-                    $redirect = route('student.index');
+                    $redirect = route('manageStudents');
                 }
 
                 return response()->json([
@@ -405,7 +405,7 @@ class UserController extends Controller
             return redirect()->route('teacherDashboard.index')->with('message', $msg1);
         }
         if ($role === 'admin') {
-            return redirect()->route('student.index')->with('message', $msg1);
+            return redirect()->route('manageStudents')->with('message', $msg1);
         }
 
         return redirect()->route('studentDashboard.index')->with('message', $msg1);

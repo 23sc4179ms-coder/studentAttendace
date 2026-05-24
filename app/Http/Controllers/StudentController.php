@@ -262,7 +262,7 @@ class StudentController extends Controller
             return response()->json(['message' => 'Student created successfully!', 'student' => $student], 201);
         }
 
-        return redirect()->route('student.index')->with("message","Student created successfully!");
+        return redirect()->route('manageStudents')->with("message","Student created successfully!");
         //  return redirect()->back()->with("message","Student created successfully!");
     
     }
@@ -436,7 +436,7 @@ class StudentController extends Controller
         ]);
     }
 
-    return redirect()->route('student.index')->with('message', $msg);
+    return redirect()->route('manageStudents')->with('message', $msg);
 }
 
     /**
@@ -452,7 +452,7 @@ class StudentController extends Controller
         $msg = "Student deleted successfully: {$name}";
         Log::info($msg);
 
-        return redirect()->route('student.index')->with('message', $msg);
+        return redirect()->route('manageStudents')->with('message', $msg);
 
         
         // return "Deleting student";
