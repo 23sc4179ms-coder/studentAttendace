@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 class StudentController extends Controller
@@ -193,14 +194,19 @@ class StudentController extends Controller
                     }
         try {
             $student = DB::transaction(function () use ($request) {
-                $user = UserAccount::create([
+                $userData = [
                     'username' => $request->input('username'),
                     'email' => $request->input('email'),
                     'password' => Hash::make($request->input('password')),
                     'role' => 'student',
                     'is_active' => 1,
-                    'must_change_password' => 1,
-                ]);
+                ];
+
+                if (Schema::hasColumn('user_accounts', 'must_change_password')) {
+                    $userData['must_change_password'] = 1;
+                }
+
+                $user = UserAccount::create($userData);
 
                 return Student::create([
                     'user_account_id' => $user->id,
