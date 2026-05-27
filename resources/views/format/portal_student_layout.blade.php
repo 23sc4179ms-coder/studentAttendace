@@ -41,7 +41,7 @@
 
         @section('footer')
         <footer class="footer">
-          <p>Copyright &copy; {{ date('Y') }} lhemster</p>
+          <p>Copyright &copy; {{ date('Y') }} emmanuel page</p>
         </footer>
         @show
       </div>

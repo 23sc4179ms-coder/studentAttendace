@@ -19,8 +19,6 @@
             <div class="d-flex gap-2 align-items-center">
                 <a href="{{ route('student.create') }}" class="btn-ui btn-ui--primary">Add Student</a>
                 <a href="{{ route('teacher.create') }}" class="btn-ui btn-ui--secondary">Add Teacher</a>
-                <a href="{{ route('export.studentsTeachers') }}" class="btn-ui btn-ui--ghost">Export Excel</a>
-                <a href="{{ route('course.index') }}" class="btn-ui btn-ui--ghost">Courses</a>
                 @if(($logged_role ?? null) === 'admin')
                     <a href="{{ route('attendance.index') }}" class="btn-ui btn-ui--ghost">Attendance Records</a>
                 @endif

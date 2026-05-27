@@ -36,13 +36,19 @@
       </aside>
 
       <div class="app-main">
+        <header class="content-header">
+          <div class="d-flex justify-content-end gap-2 mb-3">
+            <a href="{{ route('export.studentsTeachers') }}" class="btn-ui btn-ui--ghost">Export Excel</a>
+            <a href="{{ route('course.index') }}" class="btn-ui btn-ui--ghost">Courses</a>
+          </div>
+        </header>
         <main class="content" role="main">
           @yield('content')
         </main>
 
         @section('footer')
         <footer class="footer">
-          <p>Copyright &copy; {{ date('Y') }} lhemster</p>
+          <p>Copyright &copy; {{ date('Y') }} emmanuel page</p>
         </footer>
         @show
       </div>
