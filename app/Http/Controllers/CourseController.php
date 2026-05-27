@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Course;
-use App\Models\CourseEnrolled;
+use App\Models\Attendance;
 use App\Models\Student;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
@@ -19,7 +19,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        return view('course');
+        return view('portal_course');
     }
 
     /**
@@ -28,7 +28,7 @@ class CourseController extends Controller
     public function list()
     {
         $courses = Course::orderBy('course_name')->paginate(10);
-        return view('courseList', compact('courses'));
+        return view('portal_course_list', compact('courses'));
     }
 
     /**
@@ -36,7 +36,7 @@ class CourseController extends Controller
      */
     public function create()
     {
-        return view('addcourse');
+        return view('portal_addcourse');
     }
 
     /**
@@ -73,7 +73,7 @@ class CourseController extends Controller
     public function edit(string $id)
     {
         $course = Course::findOrFail($id);
-        return view('editcourse', compact('course'));
+        return view('portal_editcourse', compact('course'));
     }
 
     /**
@@ -127,7 +127,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Enroll a student to a course and assign teacher.
+     * Record a student's attendance for a course and assign teacher.
      * - If logged role is teacher: assigns current teacher automatically.
      * - If logged role is admin: requires teacher_id.
      */
@@ -175,7 +175,7 @@ class CourseController extends Controller
 
         $section = $request->input('section');
 
-        CourseEnrolled::updateOrCreate(
+        Attendance::updateOrCreate(
             [
                 'course_id' => $courseId,
                 'student_id' => $studentId,
@@ -187,7 +187,7 @@ class CourseController extends Controller
         );
 
         return response()->json([
-            'message' => 'Student enrolled successfully!',
+            'message' => 'Attendance recorded successfully!',
             'course' => ['id' => $course->id, 'course_name' => $course->course_name],
             'student' => ['id' => $student->id],
             'teacher_id' => $teacherId,
@@ -195,7 +195,7 @@ class CourseController extends Controller
     }
 
     /**
-     * Admin UI page for bulk enrolling students.
+     * Admin UI page for bulk attendance records.
      */
     public function enrollStudentIndex()
     {
@@ -207,11 +207,11 @@ class CourseController extends Controller
         $courses = Course::orderBy('course_name')->get();
         $teachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
 
-        return view('enrollstudent', compact('courses', 'teachers'));
+        return view('portal_attendance', compact('courses', 'teachers'));
     }
 
     /**
-     * Returns the students list partial for the bulk enroll page.
+     * Returns the students list partial for the bulk attendance page.
      */
     public function enrollStudentStudents(Request $request)
     {
@@ -233,11 +233,11 @@ class CourseController extends Controller
         }
 
         $students = $studentsQuery->orderBy('last_name')->orderBy('first_name')->paginate(10);
-        return view('enrollstudentStudents', compact('students'));
+        return view('portal_attendance_students', compact('students'));
     }
 
     /**
-     * Bulk enroll many students to one course with one teacher.
+     * Bulk record attendance for many students in one course with one teacher.
      */
     public function bulkEnroll(Request $request)
     {
@@ -276,14 +276,14 @@ class CourseController extends Controller
             ];
         }
 
-        DB::table('course_enrolled')->upsert(
+        DB::table('attendances')->upsert(
             $rows,
             ['course_id', 'student_id'],
             ['teacher_id', 'section', 'updated_at']
         );
 
         return response()->json([
-            'message' => 'Students enrolled successfully!',
+            'message' => 'Attendance recorded successfully!',
             'count' => count($rows),
         ]);
     }

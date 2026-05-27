@@ -58,7 +58,7 @@ class SessionUserAccountMW
             if (in_array($first, ['studentDashboard'])) {
                 return redirect('/teacherDashboard')->with('msg', 'Access denied.');
             }
-            if (in_array($first, ['enrollstudent'])) {
+            if (in_array($first, ['attendance'])) {
                 return redirect('/teacherDashboard')->with('msg', 'Access denied.');
             }
         }
@@ -69,7 +69,7 @@ class SessionUserAccountMW
         }
 
         if ($user_role === 'student') {
-            if (in_array($first, ['enrollstudent'])) {
+            if (in_array($first, ['attendance'])) {
                 return redirect('/studentDashboard')->with('msg', 'Access denied.');
             }
         }

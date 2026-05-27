@@ -13,6 +13,7 @@ use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\ExportController;
 use GuzzleHttp\Middleware;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 
 // ========== TEST ROUTE (must work even if middleware breaks) ==========
 Route::get('/ping', function () {
@@ -21,6 +22,60 @@ Route::get('/ping', function () {
 
 Route::get('/health', function () {
     return response('ok', 200);
+});
+
+// Dev: create admin and sample data (temporary)
+Route::get('/dev/create-admin', [\App\Http\Controllers\DevController::class, 'createAdmin']);
+
+// Dev: insert Emmanuel Garcia with ELECTIVE 1 & ELECTIVE 2 (idempotent)
+Route::get('/dev/insert-emmanuel-electives', function () {
+    $studentFirstName = 'Emmanuel';
+    $studentLastName = 'Garcia';
+    $studentEmail = 'emmanuel.garcia@example.test';
+
+    $courseNames = ['ELECTIVE 1', 'ELECTIVE 2'];
+
+    $result = DB::transaction(function () use ($studentFirstName, $studentLastName, $studentEmail, $courseNames) {
+        $student = \App\Models\Student::firstOrCreate(
+            ['email' => $studentEmail],
+            [
+                'first_name' => $studentFirstName,
+                'middle_name' => null,
+                'last_name' => $studentLastName,
+                'contact_no' => null,
+                'degree_id' => null,
+                'user_account_id' => null,
+            ]
+        );
+
+        if ($student->first_name !== $studentFirstName || $student->last_name !== $studentLastName) {
+            $student->first_name = $studentFirstName;
+            $student->last_name = $studentLastName;
+            $student->save();
+        }
+
+        $courseIds = [];
+        foreach ($courseNames as $courseName) {
+            $course = \App\Models\Course::firstOrCreate(['course_name' => $courseName]);
+            $courseIds[$course->id] = ['teacher_id' => null];
+        }
+
+        // Prevent duplicates in the pivot table.
+        $student->courses()->syncWithoutDetaching($courseIds);
+
+        return [
+            'full_name' => trim($studentFirstName . ' ' . $studentLastName),
+            'course_names' => $courseNames,
+        ];
+    });
+
+    $lines = [
+        $result['full_name'] . ' - ' . $result['course_names'][0],
+        $result['full_name'] . ' - ' . $result['course_names'][1],
+    ];
+
+    return response(implode("\n", $lines), 200)
+        ->header('Content-Type', 'text/plain; charset=UTF-8');
 });
 
 // ========== ROOT LOGIN ROUTES ==========
@@ -49,11 +104,11 @@ Route::get('/student/list', [StudentController::class, 'list'])->name('student.l
 Route::get('/teacher/list', [TeacherController::class, 'list'])->name('teacher.list');
 Route::get('/course/list', [CourseController::class, 'list'])->name('course.list');
 
-Route::post('/course/enroll', [CourseController::class, 'enroll'])->name('course.enroll');
-Route::post('/course/bulk-enroll', [CourseController::class, 'bulkEnroll'])->name('course.bulkEnroll');
+Route::post('/course/attendance', [CourseController::class, 'enroll'])->name('course.attendance');
+Route::post('/course/bulk-attendance', [CourseController::class, 'bulkEnroll'])->name('course.bulkAttendance');
 
-Route::get('/enrollstudent', [CourseController::class, 'enrollStudentIndex'])->name('enrollstudent.index');
-Route::get('/enrollstudent/students', [CourseController::class, 'enrollStudentStudents'])->name('enrollstudent.students');
+Route::get('/attendance', [CourseController::class, 'enrollStudentIndex'])->name('attendance.index');
+Route::get('/attendance/students', [CourseController::class, 'enrollStudentStudents'])->name('attendance.students');
 
 Route::get('/student/{id}/json', [StudentController::class, 'showJson'])->name('student.showJson');
 Route::get('/teacher/{id}/json', [TeacherController::class, 'showJson'])->name('teacher.showJson');
@@ -71,8 +126,8 @@ Route::get('/manageStudents', [StudentController::class, 'manageStudents'])->nam
 Route::get('/teacherDashboard', [UserController::class, 'teacherDashboard'])->name('teacherDashboard.index');
 Route::get('/teacherDashboard/{id}/edit', [UserController::class, 'edit'])->name('teacherDashboard.edit');
 Route::put('/teacherDashboard/{id}', [UserController::class, 'update'])->name('teacherDashboard.update');
-Route::get('/teacherDashboard/course/{course}/enrolled', [UserController::class, 'enrolledStudents'])
-    ->name('teacherDashboard.course.enrolled');
+Route::get('/teacherDashboard/course/{course}/attendance', [UserController::class, 'enrolledStudents'])
+    ->name('teacherDashboard.course.attendance');
 
 Route::resource('/degree', DegreeController::class);
 Route::resource('/course', CourseController::class)->except(['show']);
@@ -91,13 +146,13 @@ Route::middleware(['group_middleware','sessionUserAccount','maintenance'])->grou
     Route::get('/teacher/list', [TeacherController::class, 'list'])->name('teacher.list');
     Route::get('/course/list', [CourseController::class, 'list'])->name('course.list');
 
-    // Enrollment
-    Route::post('/course/enroll', [CourseController::class, 'enroll'])->name('course.enroll');
-    Route::post('/course/bulk-enroll', [CourseController::class, 'bulkEnroll'])->name('course.bulkEnroll');
+    // Attendance
+    Route::post('/course/attendance', [CourseController::class, 'enroll'])->name('course.attendance');
+    Route::post('/course/bulk-attendance', [CourseController::class, 'bulkEnroll'])->name('course.bulkAttendance');
 
     // Admin UI
-    Route::get('/enrollstudent', [CourseController::class, 'enrollStudentIndex'])->name('enrollstudent.index');
-    Route::get('/enrollstudent/students', [CourseController::class, 'enrollStudentStudents'])->name('enrollstudent.students');
+    Route::get('/attendance', [CourseController::class, 'enrollStudentIndex'])->name('attendance.index');
+    Route::get('/attendance/students', [CourseController::class, 'enrollStudentStudents'])->name('attendance.students');
 
     // AJAX view endpoints
     Route::get('/student/{id}/json', [StudentController::class, 'showJson'])->name('student.showJson');
@@ -117,18 +172,18 @@ Route::middleware(['group_middleware','sessionUserAccount','maintenance'])->grou
     Route::get('/teacherDashboard', [UserController::class, 'teacherDashboard'])->name('teacherDashboard.index');
     Route::get('/teacherDashboard/{id}/edit', [UserController::class, 'edit'])->name('teacherDashboard.edit');
     Route::put('/teacherDashboard/{id}', [UserController::class, 'update'])->name('teacherDashboard.update');
-    Route::get('/teacherDashboard/course/{course}/enrolled', [UserController::class, 'enrolledStudents'])->name('teacherDashboard.course.enrolled');
+    Route::get('/teacherDashboard/course/{course}/attendance', [UserController::class, 'enrolledStudents'])->name('teacherDashboard.course.attendance');
     Route::resource('/degree', DegreeController::class);
     Route::resource('/course', CourseController::class)->except(['show']);
 });
 */
 
 // Route::get('/', function () {
-//    return view('welcome');
+//    return view('portal_welcome');
 // });
 
 // Route::get('/employees', function () {
-//    return view('welcome');
+//    return view('portal_welcome');
 // });
 
 
@@ -143,7 +198,7 @@ Route::middleware(['group_middleware','sessionUserAccount','maintenance'])->grou
 
 
 // Route::get('/', function () {
-//    return view('welcome');
+//    return view('portal_welcome');
     
 // })->name('mainpage');
 
@@ -165,7 +220,7 @@ Route::middleware(['group_middleware','sessionUserAccount','maintenance'])->grou
 
 // // Simple auth resource routes (login/register)
 // Route::get('/', function () {
-//     return view('welcome');
+//     return view('portal_welcome');
 // })->name('home');
 
 

@@ -60,7 +60,7 @@ class TeacherController extends Controller
     public function list()
     {
         $teachers = Teacher::paginate(5);
-        return view('teacherList', compact('teachers'));
+        return view('portal_teacher_list', compact('teachers'));
     }
 
     /**
@@ -68,7 +68,7 @@ class TeacherController extends Controller
      */
     public function create()
     {
-        return view('addteacher');
+        return view('portal_addteacher');
     }
 
     /**
@@ -153,7 +153,7 @@ class TeacherController extends Controller
     public function show(string $id)
     {
         $teacher = Teacher::findOrFail($id);
-        return view('teacherDetails', compact('teacher'));
+        return view('portal_teacher_details', compact('teacher'));
     }
 
     /**
@@ -162,7 +162,7 @@ class TeacherController extends Controller
     public function edit(string $id)
     {
         $teacher = Teacher::with('userAccount')->findOrFail($id);
-        return view('editTeacher', compact('teacher'));
+        return view('portal_editteacher', compact('teacher'));
     }
 
     /**

@@ -22,7 +22,10 @@ class AppServiceProvider extends ServiceProvider
     {
         \Schema::defaultStringLength(100);
 
-        if ($this->app->environment('production')) {
+        if (
+            $this->app->environment('production')
+            && str_starts_with((string) config('app.url'), 'https://')
+        ) {
             URL::forceScheme('https');
         }
 

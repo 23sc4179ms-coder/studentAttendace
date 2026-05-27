@@ -180,33 +180,33 @@ $(document).ready(function() {
         autoReloadCourses();
     }
 
-    // ---------- Teacher dashboard: load enrolled students ----------
+    // ---------- Teacher dashboard: load attendance records ----------
     // Used on teacher dashboard (resources/views/teacherDashboard.blade.php):
-    // - Left list items: .btn-show-enrolled (data-url)
-    // - Right panel: #enrolledStudentsList
-    function loadEnrolledStudents(url) {
-        loadHtml($('#enrolledStudentsList'), url, {
+    // - Left list items: .btn-show-attendance (data-url)
+    // - Right panel: #attendanceRecordsList
+    function loadAttendanceRecords(url) {
+        loadHtml($('#attendanceRecordsList'), url, {
             loadingText: 'Loading...',
-            failPrefix: 'Failed to load enrolled students',
+            failPrefix: 'Failed to load attendance records',
             persistUrl: true
         });
     }
 
-    $(document).on('click', '.btn-show-enrolled', function(e) {
+    $(document).on('click', '.btn-show-attendance', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
         if (!url) return;
 
         // visual active state
-        $('.btn-show-enrolled').removeClass('active');
+        $('.btn-show-attendance').removeClass('active');
         $(this).addClass('active');
 
-        loadEnrolledStudents(url);
+        loadAttendanceRecords(url);
     });
 
     // auto-load first course on teacher dashboard
-    if ($('#teacherCourses').length && $('.btn-show-enrolled').length) {
-        $('.btn-show-enrolled').first().trigger('click');
+    if ($('#teacherCourses').length && $('.btn-show-attendance').length) {
+        $('.btn-show-attendance').first().trigger('click');
     }
 
     // ---------- Student dashboard: load course details (teacher + classmates) ----------
@@ -237,14 +237,14 @@ $(document).ready(function() {
     }
 
     // ---------- Pagination (AJAX) ----------
-    // Used inside: #studentsList / #teachersList / #coursesList / #enrolledStudentsList / #studentCourseDetails
-    $(document).on('click', '#studentsList .pagination a, #teachersList .pagination a, #coursesList .pagination a, #enrolledStudentsList .pagination a, #studentCourseDetails .pagination a', function(e) {
+    // Used inside: #studentsList / #teachersList / #coursesList / #attendanceRecordsList / #studentCourseDetails
+    $(document).on('click', '#studentsList .pagination a, #teachersList .pagination a, #coursesList .pagination a, #attendanceRecordsList .pagination a, #studentCourseDetails .pagination a', function(e) {
         e.preventDefault();
 
         var url = $(this).attr('href');
         if (!url) return;
 
-        var container = $(this).closest('#studentsList, #teachersList, #coursesList, #enrolledStudentsList, #studentCourseDetails');
+        var container = $(this).closest('#studentsList, #teachersList, #coursesList, #attendanceRecordsList, #studentCourseDetails');
         if (!container.length) return;
 
         // Persist current page so auto-refresh doesn't jump back to page 1
@@ -352,40 +352,40 @@ $(document).ready(function() {
         });
     });
 
-    // ---------- Enroll Student to Course (AJAX) ----------
+    // ---------- Attendance to Course (AJAX) ----------
     // Used in student list modal workflow:
-    // - Open modal: #enrollStudentModal (button data-student-id/name)
-    // - Submit enroll: #confirmEnrollBtn (POST /course/enroll)
-    $(document).on('show.bs.modal', '#enrollStudentModal', function(e) {
+    // - Open modal: #attendanceStudentModal (button data-student-id/name)
+    // - Submit attendance: #confirmAttendanceBtn (POST /course/attendance)
+    $(document).on('show.bs.modal', '#attendanceStudentModal', function(e) {
         var button = $(e.relatedTarget);
         var studentId = button.data('student-id');
         var studentName = button.data('student-name');
 
-        $('#enrollStudentId').val(studentId || '');
-        $('#enrollStudentName').text(studentName || '—');
-        $('#enrollCourseId').val('');
-        $('#enrollSection').val('');
-        $('#enrollTeacherId').val('');
-        $('#enrollAlert').addClass('d-none').text('');
-        $('#confirmEnrollBtn').prop('disabled', false).text('Enroll');
+        $('#attendanceStudentId').val(studentId || '');
+        $('#attendanceStudentName').text(studentName || '—');
+        $('#attendanceCourseId').val('');
+        $('#attendanceSection').val('');
+        $('#attendanceTeacherId').val('');
+        $('#attendanceAlert').addClass('d-none').text('');
+        $('#confirmAttendanceBtn').prop('disabled', false).text('Save Attendance');
     });
 
-    $(document).on('click', '#confirmEnrollBtn', function(e) {
+    $(document).on('click', '#confirmAttendanceBtn', function(e) {
         e.preventDefault();
         var $btn = $(this);
-        var url = $btn.data('url') || appUrl('/course/enroll');
-        var studentId = $('#enrollStudentId').val();
-        var courseId = $('#enrollCourseId').val();
-        var section = $('#enrollSection').val();
-        var teacherId = $('#enrollTeacherId').val();
-        var $alert = $('#enrollAlert');
+        var url = $btn.data('url') || appUrl('/course/attendance');
+        var studentId = $('#attendanceStudentId').val();
+        var courseId = $('#attendanceCourseId').val();
+        var section = $('#attendanceSection').val();
+        var teacherId = $('#attendanceTeacherId').val();
+        var $alert = $('#attendanceAlert');
 
         if (!studentId || !courseId) {
             $alert.removeClass('d-none').text('Please select a course.');
             return;
         }
 
-        $btn.prop('disabled', true).text('Enrolling...');
+        $btn.prop('disabled', true).text('Saving...');
         $alert.addClass('d-none').text('');
 
         var payload = {
@@ -400,36 +400,36 @@ $(document).ready(function() {
             type: 'POST',
             data: payload,
             success: function(resp) {
-                var modalEl = document.getElementById('enrollStudentModal');
+                var modalEl = document.getElementById('attendanceStudentModal');
                 var modal = bootstrap.Modal.getInstance(modalEl);
                 if (modal) modal.hide();
-                alert(resp.message || 'Student enrolled successfully!');
+                alert(resp.message || 'Attendance recorded successfully!');
             },
             error: function(xhr) {
-                $btn.prop('disabled', false).text('Enroll');
-                var message = validationMessage(xhr) || ('Failed to enroll student. ' + httpHint(xhr && xhr.status));
+                $btn.prop('disabled', false).text('Save Attendance');
+                var message = validationMessage(xhr) || ('Failed to save attendance. ' + httpHint(xhr && xhr.status));
                 $alert.removeClass('d-none').text(message);
             }
         });
     });
 
-    // ---------- Bulk Enroll Page (Admin) ----------
-    // Used on bulk enroll page:
-    // - List container: #enrollStudentsList
-    // - Search: #enrollStudentsSearchBtn / #enrollStudentsClearSearch
-    // - Select all: #selectAllEnrollStudents
-    // - Submit: #bulkEnrollBtn
-    var selectedEnrollStudentIds = {};
+    // ---------- Bulk Attendance Page (Admin) ----------
+    // Used on bulk attendance page:
+    // - List container: #attendanceStudentsList
+    // - Search: #attendanceStudentsSearchBtn / #attendanceStudentsClearSearch
+    // - Select all: #selectAllAttendanceStudents
+    // - Submit: #bulkAttendanceBtn
+    var selectedAttendanceStudentIds = {};
 
     function updateSelectedCountText() {
-        var count = Object.keys(selectedEnrollStudentIds).length;
+        var count = Object.keys(selectedAttendanceStudentIds).length;
         $('#selectedCountText').text(count + ' selected');
     }
 
-    function loadEnrollStudentsList(url) {
-        var container = $('#enrollStudentsList');
+    function loadAttendanceStudentsList(url) {
+        var container = $('#attendanceStudentsList');
         if (!container.length) return;
-        url = url || container.data('url') || appUrl('/enrollstudent/students');
+        url = url || container.data('url') || appUrl('/attendance/students');
 
         container.html('<div class="text-muted">Loading students...</div>');
         $.get(url)
@@ -438,9 +438,9 @@ $(document).ready(function() {
                 container.data('url', url);
 
                 // restore checked state
-                container.find('.enroll-student-checkbox').each(function() {
+                container.find('.attendance-student-checkbox').each(function() {
                     var sid = String($(this).val());
-                    if (selectedEnrollStudentIds[sid]) {
+                    if (selectedAttendanceStudentIds[sid]) {
                         $(this).prop('checked', true);
                     }
                 });
@@ -453,55 +453,55 @@ $(document).ready(function() {
             });
     }
 
-    if ($('#enrollStudentsList').length) {
-        selectedEnrollStudentIds = {};
+    if ($('#attendanceStudentsList').length) {
+        selectedAttendanceStudentIds = {};
         updateSelectedCountText();
-        loadEnrollStudentsList();
+        loadAttendanceStudentsList();
     }
 
-    $(document).on('click', '#enrollStudentsSearchBtn', function() {
-        var q = $('#enrollStudentsSearch').val() || '';
-        var baseUrl = $('#enrollStudentsList').data('url') || appUrl('/enrollstudent/students');
+    $(document).on('click', '#attendanceStudentsSearchBtn', function() {
+        var q = $('#attendanceStudentsSearch').val() || '';
+        var baseUrl = $('#attendanceStudentsList').data('url') || appUrl('/attendance/students');
         var url = baseUrl.split('?')[0] + '?q=' + encodeURIComponent(q);
-        loadEnrollStudentsList(url);
+        loadAttendanceStudentsList(url);
     });
 
-    $(document).on('click', '#enrollStudentsClearSearch', function() {
-        $('#enrollStudentsSearch').val('');
-        loadEnrollStudentsList(appUrl('/enrollstudent/students'));
+    $(document).on('click', '#attendanceStudentsClearSearch', function() {
+        $('#attendanceStudentsSearch').val('');
+        loadAttendanceStudentsList(appUrl('/attendance/students'));
     });
 
-    $(document).on('change', '.enroll-student-checkbox', function() {
+    $(document).on('change', '.attendance-student-checkbox', function() {
         var sid = String($(this).val());
-        if ($(this).is(':checked')) selectedEnrollStudentIds[sid] = true;
-        else delete selectedEnrollStudentIds[sid];
+        if ($(this).is(':checked')) selectedAttendanceStudentIds[sid] = true;
+        else delete selectedAttendanceStudentIds[sid];
         updateSelectedCountText();
     });
 
-    $(document).on('change', '#selectAllEnrollStudents', function() {
+    $(document).on('change', '#selectAllAttendanceStudents', function() {
         var checked = $(this).is(':checked');
-        $('#enrollStudentsList .enroll-student-checkbox').each(function() {
+        $('#attendanceStudentsList .attendance-student-checkbox').each(function() {
             $(this).prop('checked', checked).trigger('change');
         });
     });
 
-    // paginate inside bulk enroll list
-    $(document).on('click', '#enrollStudentsList .pagination a', function(e) {
+    // paginate inside bulk attendance list
+    $(document).on('click', '#attendanceStudentsList .pagination a', function(e) {
         e.preventDefault();
         var url = $(this).attr('href');
-        if (url) loadEnrollStudentsList(url);
+        if (url) loadAttendanceStudentsList(url);
     });
 
-    $(document).on('click', '#bulkEnrollBtn', function(e) {
+    $(document).on('click', '#bulkAttendanceBtn', function(e) {
         e.preventDefault();
         var $btn = $(this);
-        var $alert = $('#bulkEnrollAlert');
-        var url = $btn.data('url') || appUrl('/course/bulk-enroll');
+        var $alert = $('#bulkAttendanceAlert');
+        var url = $btn.data('url') || appUrl('/course/bulk-attendance');
 
         var courseId = $('#bulkCourseId').val();
         var teacherId = $('#bulkTeacherId').val();
         var section = $('#bulkSection').val();
-        var studentIds = Object.keys(selectedEnrollStudentIds).map(function(x) { return parseInt(x, 10); });
+        var studentIds = Object.keys(selectedAttendanceStudentIds).map(function(x) { return parseInt(x, 10); });
 
         $alert.addClass('d-none').text('');
 
@@ -514,7 +514,7 @@ $(document).ready(function() {
             return;
         }
 
-        $btn.prop('disabled', true).text('Enrolling...');
+        $btn.prop('disabled', true).text('Saving...');
 
         $.ajax({
             url: url,
@@ -526,15 +526,15 @@ $(document).ready(function() {
                 student_ids: studentIds
             },
             success: function(resp) {
-                alert(resp.message || 'Students enrolled successfully!');
+                alert(resp.message || 'Attendance recorded successfully!');
                 // reset selection
-                selectedEnrollStudentIds = {};
+                selectedAttendanceStudentIds = {};
                 updateSelectedCountText();
-                loadEnrollStudentsList();
+                loadAttendanceStudentsList();
             },
             error: function(xhr) {
-                $btn.prop('disabled', false).text('Enroll Selected');
-                var message = validationMessage(xhr) || ('Failed to enroll students. ' + httpHint(xhr && xhr.status));
+                $btn.prop('disabled', false).text('Save Attendance');
+                var message = validationMessage(xhr) || ('Failed to save attendance. ' + httpHint(xhr && xhr.status));
                 $alert.removeClass('d-none').text(message);
             }
         });

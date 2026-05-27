@@ -14,18 +14,18 @@ class ClientController extends Controller
     $name ="Mark Lhemuel Arenas";
     $address = "San Carlos City";
     //    return view("greetings",['name'=>$name]);
-       return view("greetings",compact("name","address"));
+         return view("portal_greetings",compact("name","address"));
     }
     public function displayProfile() {
-    return view("clientProfile");
+     return view("portal_client_profile");
     }
 
     public function displayDashboard() {
-    return view("clientDashboard");
+     return view("portal_client_dashboard");
     }
 
     public function displayAboutUs() {
-    return view("clientAboutUs");
+     return view("portal_client_about");
     }
 
     public function index()
@@ -44,7 +44,7 @@ class ClientController extends Controller
         
     );
     //   $clients = array();
-      return view("client")->with("grade",$grade)->with("clients",$clients);
+    return view("portal_client")->with("grade",$grade)->with("clients",$clients);
 
     }
 

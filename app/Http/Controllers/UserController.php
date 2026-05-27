@@ -5,7 +5,7 @@ use App\Models\UserAccount;
 use App\Models\Student;
 use App\Models\Degree;
 use App\Models\Course;
-use App\Models\CourseEnrolled;
+use App\Models\Attendance;
 use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +21,7 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function changePass(){
-        return view('changePassword');
+        return view('portal_change_password');
     }
     public function index()
     {
@@ -46,22 +46,22 @@ class UserController extends Controller
         }
 
         $student = Student::where('user_account_id', $userId)->first();
-        $enrolledCourses = collect();
+        $attendanceCourses = collect();
         if ($student) {
-            $enrolledCourses = Course::query()
-                ->join('course_enrolled', 'course_enrolled.course_id', '=', 'courses.id')
-                ->where('course_enrolled.student_id', $student->id)
-                ->select('courses.*', 'course_enrolled.section', 'course_enrolled.teacher_id')
+            $attendanceCourses = Course::query()
+                ->join('attendances', 'attendances.course_id', '=', 'courses.id')
+                ->where('attendances.student_id', $student->id)
+                ->select('courses.*', 'attendances.section', 'attendances.teacher_id')
                 ->orderBy('courses.course_name')
                 ->get();
         }
 
-        return view('studentDashboard', [
+        return view('portal_student_dashboard', [
             'user' => $user,
             'logged_user' => $logged_user,
             'logged_role' => $logged_role,
             'student' => $student,
-            'enrolledCourses' => $enrolledCourses,
+            'attendanceCourses' => $attendanceCourses,
         ]);
         }
 
@@ -105,15 +105,15 @@ class UserController extends Controller
         $courses = collect();
         if ($teacher) {
             $courses = Course::query()
-                ->select('courses.*', DB::raw('COUNT(course_enrolled.id) as enrolled_count'))
-                ->join('course_enrolled', 'course_enrolled.course_id', '=', 'courses.id')
-                ->where('course_enrolled.teacher_id', $teacher->id)
+                ->select('courses.*', DB::raw('COUNT(attendances.id) as attendance_count'))
+                ->join('attendances', 'attendances.course_id', '=', 'courses.id')
+                ->where('attendances.teacher_id', $teacher->id)
                 ->groupBy('courses.id', 'courses.course_name', 'courses.created_at', 'courses.updated_at')
                 ->orderBy('courses.course_name')
                 ->get();
         }
 
-        return view('teacherDashboard', [
+        return view('portal_teacher_dashboard', [
             'user' => $user,
             'logged_user' => $logged_user,
             'logged_role' => $logged_role,
@@ -137,14 +137,14 @@ class UserController extends Controller
         }
 
         $students = Student::query()
-            ->join('course_enrolled', 'course_enrolled.student_id', '=', 'students.id')
-            ->where('course_enrolled.course_id', $course->id)
-            ->where('course_enrolled.teacher_id', $teacher->id)
+            ->join('attendances', 'attendances.student_id', '=', 'students.id')
+            ->where('attendances.course_id', $course->id)
+            ->where('attendances.teacher_id', $teacher->id)
             ->select('students.*')
             ->with(['degree', 'userAccount'])
             ->paginate(5);
 
-        return view('enrolled', [
+        return view('portal_attended', [
             'course' => $course,
             'students' => $students,
         ]);
@@ -163,34 +163,34 @@ class UserController extends Controller
             abort(403);
         }
 
-        $enrollment = CourseEnrolled::query()
+        $attendance = Attendance::query()
             ->where('course_id', $course->id)
             ->where('student_id', $student->id)
             ->first();
 
-        if (!$enrollment) {
+        if (!$attendance) {
             abort(403);
         }
 
         $teacherName = null;
-        if ($enrollment->teacher_id) {
-            $t = Teacher::find($enrollment->teacher_id);
+        if ($attendance->teacher_id) {
+            $t = Teacher::find($attendance->teacher_id);
             if ($t) {
                 $teacherName = trim($t->first_name . ' ' . ($t->middle_name ?? '') . ' ' . $t->last_name);
             }
         }
 
         $classmates = Student::query()
-            ->join('course_enrolled', 'course_enrolled.student_id', '=', 'students.id')
-            ->where('course_enrolled.course_id', $course->id)
-            ->where('course_enrolled.section', $enrollment->section)
+            ->join('attendances', 'attendances.student_id', '=', 'students.id')
+            ->where('attendances.course_id', $course->id)
+            ->where('attendances.section', $attendance->section)
             ->select('students.*')
             ->with(['degree', 'userAccount'])
             ->paginate(10);
 
-        return view('studentCourseDetails', [
+        return view('portal_student_course_details', [
             'course' => $course,
-            'enrollment' => $enrollment,
+            'attendance' => $attendance,
             'teacherName' => $teacherName,
             'classmates' => $classmates,
         ]);
@@ -210,7 +210,7 @@ class UserController extends Controller
     //             // $request->session()->put('user_id', $user->id);
     //             // $redirectUrl = url("/studentDashboard/{$user->id}/edit");
     //             // $msg = 'Login successful. Redirecting to students landing page...';
-    //             // return view('loginSuccess')->with('redirectUrl', $redirectUrl)->with('msg', $msg);
+    //             // return view('portal_login_success')->with('redirectUrl', $redirectUrl)->with('msg', $msg);
     //             // session([
     //             // "logged_user" => $user->username,
     //             // "logged_id" => $user->id,
@@ -232,11 +232,11 @@ class UserController extends Controller
     //             $msg = 'Invalid username or password';
     //             Session::forget('logged_user');
     //             Session::flush();
-    //             return view('loginPage')->with('msg', $msg);
+    //             return view('portal_login_page')->with('msg', $msg);
     //         }
     //     }
 
-    //     return view('loginPage');
+    //     return view('portal_login_page');
     // }
     public function login(Request $request)
 {
@@ -301,12 +301,12 @@ class UserController extends Controller
             $msg = 'Invalid username or password';
             Session::forget('logged_user');
             Session::flush();
-            return view('loginPage')->with('msg', $msg);
+            return view('portal_login_page')->with('msg', $msg);
         }
     }
 
     // GET request – show login page
-    return view('loginPage');
+    return view('portal_login_page');
 }
     public function logout(Request $request)
     {
@@ -345,7 +345,7 @@ class UserController extends Controller
         //
          $user = UserAccount::find($id);
       
-        return view('changePassword', [
+        return view('portal_change_password', [
             'user' => $user,
             
         ]);

@@ -24,15 +24,15 @@ class PagesController extends Controller
             return response('Student not found', 404);
         }
         foreach($student->courses as $course) {
-            echo "$student->last_name is enrolled in $course->course_name<br>";
+            echo "$student->last_name has attendance in $course->course_name<br>";
         }
     
    }
    public function maintenance(){
-        return response()->view('maintenace', [], 503);
+        return response()->view('portal_maintenance', [], 503);
     }
     
     public function demo() {
-        return view('demo');
+        return view('portal_demo');
     }
 }

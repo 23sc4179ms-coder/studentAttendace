@@ -21,7 +21,7 @@ What I checked (to rule out other common causes)
 - The real fatal message was visible in Windows Application events for provider "MariaDB".
 
 Fix applied (safe + keeps your app database)
-Goal: restore clean system tables WITHOUT deleting your project database folder (e.g. `mlgalaraveldb`).
+Goal: restore clean system tables WITHOUT deleting your project database folder (e.g. `eggalllaraveldb`).
 
 Steps performed
 1) Stop any running `mysqld.exe`
@@ -54,7 +54,7 @@ Important notes
 - This fix resets/replaces the system `mysql` database (users/privileges/roles).
   - In most XAMPP setups, `root` has no password by default.
   - If you previously set a root password, you may need to re-apply it and update Laravel `.env` accordingly.
-- Your application database folder (e.g. C:\xampp\mysql\data\mlgalaraveldb) was NOT deleted.
+- Your application database folder (e.g. C:\xampp\mysql\data\eggalllaraveldb) was NOT deleted.
 
 How to start now
 1) Open XAMPP Control Panel
