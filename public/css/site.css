@@ -31,6 +31,34 @@ body{
     linear-gradient(180deg, #070b14 0%, #0b1220 100%);
 }
 
+:root{
+  --ink-950: #0b1220;
+}
+
+/* Ensure readable text on light backgrounds (Bootstrap defaults). */
+.bg-white,
+.bg-light,
+.table,
+.table-striped,
+.table-hover,
+.table-light,
+.modal-content,
+.dropdown-menu,
+.list-group-item,
+.card.bg-white,
+.card.bg-light{
+  color: var(--ink-950);
+}
+
+.bg-white a,
+.bg-light a,
+.modal-content a,
+.dropdown-menu a,
+.list-group-item a,
+.table a{
+  color: var(--ink-950);
+}
+
 a{
   color: inherit;
 }
