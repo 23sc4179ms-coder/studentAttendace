@@ -51,9 +51,9 @@ RUN mkdir -p storage/framework/{sessions,views,cache} \
 
 EXPOSE 10000
 
-# Runtime: start the app quickly so Render can serve the login page and assets.
-# Keep APP_KEY and migrations managed by Render environment/deploy settings.
+# Runtime: run migrations FIRST, then seed, then serve
 CMD mkdir -p /var/www/storage/framework/views && \
     export VIEW_COMPILED_PATH=/var/www/storage/framework/views && \
-    php artisan db:seed --force --no-interaction && \
+    php artisan migrate --force && \
+    php artisan db:seed --force && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
