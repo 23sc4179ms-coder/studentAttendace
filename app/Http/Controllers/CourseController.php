@@ -14,34 +14,26 @@ use Illuminate\Validation\Rule;
 
 class CourseController extends Controller
 {
-    /**
-     * Display a listing of courses.
-     */
+    
     public function index()
     {
         return view('course');
     }
 
-    /**
-     * AJAX endpoint: returns the courses table partial.
-     */
+    
     public function list()
     {
         $courses = Course::orderBy('course_name')->paginate(10);
         return view('course_list', compact('courses'));
     }
 
-    /**
-     * Show form to create a new course.
-     */
+    
     public function create()
     {
         return view('addcourse');
     }
 
-    /**
-     * Store a newly created course.
-     */
+    
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -67,18 +59,14 @@ class CourseController extends Controller
         return redirect()->route('course.index')->with('message', 'Course created successfully!');
     }
 
-    /**
-     * Show the form for editing the specified course.
-     */
+    
     public function edit(string $id)
     {
         $course = Course::findOrFail($id);
         return view('editcourse', compact('course'));
     }
 
-    /**
-     * Update the specified course.
-     */
+    
     public function update(Request $request, string $id)
     {
         $course = Course::findOrFail($id);
@@ -111,9 +99,7 @@ class CourseController extends Controller
         return redirect()->route('course.index')->with('message', 'Course updated successfully!');
     }
 
-    /**
-     * Remove the specified course.
-     */
+    
     public function destroy(Request $request, string $id)
     {
         $course = Course::findOrFail($id);
@@ -126,11 +112,7 @@ class CourseController extends Controller
         return redirect()->route('course.index')->with('message', 'Course deleted successfully!');
     }
 
-    /**
-     * Record a student's attendance for a course and assign teacher.
-     * - If logged role is teacher: assigns current teacher automatically.
-     * - If logged role is admin: requires teacher_id.
-     */
+    
     public function enroll(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -194,9 +176,7 @@ class CourseController extends Controller
         ]);
     }
 
-    /**
-     * Admin UI page for bulk attendance records.
-     */
+    
     public function enrollStudentIndex()
     {
         $role = Session::get('logged_role');
@@ -210,9 +190,7 @@ class CourseController extends Controller
         return view('attendance', compact('courses', 'teachers'));
     }
 
-    /**
-     * Returns the students list partial for the bulk attendance page.
-     */
+    
     public function enrollStudentStudents(Request $request)
     {
         $role = Session::get('logged_role');
@@ -236,9 +214,7 @@ class CourseController extends Controller
         return view('attendance_students', compact('students'));
     }
 
-    /**
-     * Bulk record attendance for many students in one course with one teacher.
-     */
+    
     public function bulkEnroll(Request $request)
     {
         $role = Session::get('logged_role');
@@ -288,4 +264,5 @@ class CourseController extends Controller
         ]);
     }
 }
+
 

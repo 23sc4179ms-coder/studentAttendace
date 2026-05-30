@@ -9,9 +9,7 @@ use Log;
 
 class DegreeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
         $degrees = Degree::orderBy('degree_name')->paginate(10);
@@ -21,17 +19,13 @@ class DegreeController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
         return view('adddegree');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -58,9 +52,7 @@ class DegreeController extends Controller
         return redirect()->route('degree.index')->with('message', $msg);
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id)
     {
         $degree = Degree::findOrFail($id);
@@ -70,9 +62,7 @@ class DegreeController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(string $id)
     {
         $degree = Degree::findOrFail($id);
@@ -82,9 +72,7 @@ class DegreeController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id)
     {
         $degree = Degree::findOrFail($id);
@@ -114,9 +102,7 @@ class DegreeController extends Controller
         return redirect()->route('degree.index')->with('message', $msg);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id)
     {
         Degree::destroy($id);
@@ -124,4 +110,5 @@ class DegreeController extends Controller
         return redirect()->route('degree.index');
     }
 }
+
 

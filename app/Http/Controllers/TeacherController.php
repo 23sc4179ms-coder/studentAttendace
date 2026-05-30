@@ -15,9 +15,7 @@ use Illuminate\Validation\Rule;
 
 class TeacherController extends Controller
 {
-    /**
-     * AJAX endpoint: returns teacher details as JSON for view modal.
-     */
+    
     public function showJson(string $id)
     {
         $teacher = Teacher::with('userAccount')->findOrFail($id);
@@ -28,7 +26,6 @@ class TeacherController extends Controller
             if (is_dir($dir)) {
                 $matches = glob($dir . '/SN-' . $teacher->id . '-*.*') ?: [];
                 if (!empty($matches)) {
-                    // Prefer the most recently modified file
                     usort($matches, function ($a, $b) {
                         return filemtime($b) <=> filemtime($a);
                     });
@@ -46,34 +43,26 @@ class TeacherController extends Controller
             'image_url' => $imagePath ? asset($imagePath) : '',
         ]);
     }
-    /**
-     * Display a listing of the teachers.
-     */
+    
     public function index()
     {
         return redirect()->route('manageStudents');
     }
 
-    /**
-     * AJAX endpoint: returns the teachers table partial.
-     */
+    
     public function list()
     {
         $teachers = Teacher::paginate(5);
         return view('teacher_list', compact('teachers'));
     }
 
-    /**
-     * Show form to create a new teacher.
-     */
+    
     public function create()
     {
         return view('addteacher');
     }
 
-    /**
-     * Store a newly created teacher and user account.
-     */
+    
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -147,27 +136,21 @@ class TeacherController extends Controller
         return redirect()->route('manageStudents')->with('message', 'Teacher created successfully!');
     }
 
-    /**
-     * Display the specified teacher.
-     */
+    
     public function show(string $id)
     {
         $teacher = Teacher::findOrFail($id);
         return view('teacher_details', compact('teacher'));
     }
 
-    /**
-     * Show the form for editing the specified teacher.
-     */
+    
     public function edit(string $id)
     {
         $teacher = Teacher::with('userAccount')->findOrFail($id);
         return view('editteacher', compact('teacher'));
     }
 
-    /**
-     * Update the specified teacher in storage.
-     */
+    
     public function update(Request $request, string $id)
     {
         $teacher = Teacher::findOrFail($id);
@@ -182,7 +165,7 @@ class TeacherController extends Controller
                 Rule::unique('teachers', 'email')->ignore($teacher->id),
                 Rule::unique('user_accounts', 'email')->ignore($teacher->user_account_id ?? 0),
             ],
-            'contact_no' => 'nullable|min:7',   // Consistent with store()
+            'contact_no' => 'nullable|min:7',
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
@@ -196,7 +179,6 @@ class TeacherController extends Controller
                 ->withInput();
         }
 
-        // Update teacher details
         $teacher->first_name = $request->first_name;
         $teacher->middle_name = $request->middle_name;
         $teacher->last_name = $request->last_name;
@@ -234,7 +216,6 @@ class TeacherController extends Controller
             }
         }
 
-        // Keep linked user account email in sync
         $user = $teacher->userAccount;
         if ($user && $user->email !== $request->email) {
             $user->email = $request->email;
@@ -254,9 +235,7 @@ class TeacherController extends Controller
         return redirect()->route('manageStudents')->with('message', 'Teacher updated successfully!');
     }
 
-    /**
-     * Remove the specified teacher from storage.
-     */
+    
     public function destroy(Request $request, string $id)
     {
         $teacher = Teacher::findOrFail($id);
@@ -266,8 +245,6 @@ class TeacherController extends Controller
             DB::transaction(function () use ($teacher) {
                 $user = $teacher->userAccount;
 
-                // IMPORTANT: delete teacher first, then delete user account.
-                // The teachers.user_account_id FK prevents deleting user_accounts while teacher exists.
                 $teacher->delete();
 
                 if ($user) {
@@ -297,3 +274,4 @@ class TeacherController extends Controller
         return redirect()->route('manageStudents')->with('message', 'Teacher deleted successfully!');
     }
 }
+

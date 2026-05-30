@@ -17,15 +17,12 @@ use Log;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function changePass(){
         return view('change_password');
     }
     public function index()
     {
-        //
         $userId = Session::get('logged_id');
         
         if (!$userId) {
@@ -195,49 +192,11 @@ class UserController extends Controller
             'classmates' => $classmates,
         ]);
     }
-    // public function login(Request $request){
-    //     if ($request->isMethod('post')) {
-    //         $user_name = $request->input('username');
-    //         $pass_word = $request->input('password');
             
-    //         if (!$user_name || !$pass_word) {
-    //             return back()->with('msg', 'Please provide username and password');
-    //         }
 
-    //         $user = UserAccount::where('username', $user_name)->first();
 
-    //         if ($user && Hash::check($pass_word, $user->password)) {
-    //             // $request->session()->put('user_id', $user->id);
-    //             // $redirectUrl = url("/studentDashboard/{$user->id}/edit");
-    //             // $msg = 'Login successful. Redirecting to students landing page...';
-    //             // return view('login_success')->with('redirectUrl', $redirectUrl)->with('msg', $msg);
-    //             // session([
-    //             // "logged_user" => $user->username,
-    //             // "logged_id" => $user->id,
-    //             // "logged_role" => $user->role,
-    //             // ]);
-    //             Session::put('logged_user', $user->username);
-    //             Session::put('logged_id', $user->id);
-    //             Session::put('logged_role', $user->role);
 
-    //             if ($user->role === 'student') {
-    //                 return redirect('/studentDashboard');
-    //             } elseif ($user->role === 'teacher') {
-    //                 return redirect('/student');
-    //             } elseif ($user->role === 'admin') {
-    //                 return redirect('/student');
-    //             }
-    //         } else {
-    //             // return back()->with('msg', 'Invalid username or password');
-    //             $msg = 'Invalid username or password';
-    //             Session::forget('logged_user');
-    //             Session::flush();
-    //             return view('login_page')->with('msg', $msg);
-    //         }
-    //     }
 
-    //     return view('login_page');
-    // }
     public function login(Request $request)
 {
     if ($request->isMethod('post')) {
@@ -254,12 +213,10 @@ class UserController extends Controller
         $user = UserAccount::where('username', $user_name)->first();
 
         if ($user && Hash::check($pass_word, $user->password)) {
-            // Set session variables
             Session::put('logged_user', $user->username);
             Session::put('logged_id', $user->id);
             Session::put('logged_role', $user->role);
 
-            // AJAX request: return role as JSON
             if ($request->expectsJson()) {
                 if ($user->role === 'student' && $user->must_change_password) {
                     return response()->json([
@@ -282,7 +239,6 @@ class UserController extends Controller
                 ]);
             }
 
-            // Normal form submission: redirect
             if ($user->role === 'student') {
                 if ($user->must_change_password) {
                     return redirect()->route('studentDashboard.edit', $user->id);
@@ -294,7 +250,6 @@ class UserController extends Controller
                 return redirect('/student');
             }
         } else {
-            // Authentication failed
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Invalid username or password'], 401);
             }
@@ -305,7 +260,6 @@ class UserController extends Controller
         }
     }
 
-    // GET request – show login page
     return view('login_page');
 }
     public function logout(Request $request)
@@ -313,36 +267,24 @@ class UserController extends Controller
         Session::flush();
         return redirect('/')->with('msg', 'Logged out successfully.');
     }
-    /**
-     * Show the form for creating a new resource.
-     */
+    
     public function create()
     {
-        //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(Request $request)
     {
-        //
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(string $id)
     {
-        //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    
     public function edit(string $id)
     {
-        //
          $user = UserAccount::find($id);
       
         return view('change_password', [
@@ -351,9 +293,7 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    
     public function update(Request $request, string $id)
     {
           
@@ -369,14 +309,12 @@ class UserController extends Controller
                 ->withInput();
         }
 
-        // Verify old password
         if (!Hash::check($request->input('old_password'), $user_account->password)) {
             $key = 'pwd_change_attempts_' . $user_account->id;
             $attempts = session($key, 0) + 1;
             session([$key => $attempts]);
 
             if ($attempts >= 3) {
-                // exceed max attempts: clear session and force login
                 Session::forget('logged_id');
                 session()->forget($key);
                 return redirect('/')->with('msg', 'Maximum password attempts exceeded. Please login again.');
@@ -388,12 +326,10 @@ class UserController extends Controller
                 ->withInput();
         }
 
-        // Update password
         $user_account->password = Hash::make($request->input('password'));
         $user_account->must_change_password = 0;
         $user_account->save();
 
-        // reset attempt counter on success
         $key = 'pwd_change_attempts_' . $user_account->id;
         session()->forget($key);
 
@@ -412,12 +348,10 @@ class UserController extends Controller
 
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(string $id)
     {
-        //
     }
 }
+
 
