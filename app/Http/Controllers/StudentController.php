@@ -52,20 +52,20 @@ class StudentController extends Controller
 }
 
     public function studentAbout() {
-    return view("portal_student_about");
+    return view("student_about");
     }
 
     public function studentHome() {
-    return view("portal_student_home");
+    return view("student_home");
     }
 
     public function studentPage() {
-    return view("portal_student_page");
+    return view("student_page");
     }
     public function studentDashboard() {
     $logged_user = Session::get('logged_user');
     $logged_role = Session::get('logged_role');
-    return view('portal_student_dashboard')->with('logged_user', $logged_user)->with('logged_role', $logged_role);
+    return view('student_dashboard')->with('logged_user', $logged_user)->with('logged_role', $logged_role);
     }
     public function manageStudents() {
         $students = Student::with(['degree', 'userAccount'])->paginate(5);
@@ -75,7 +75,7 @@ class StudentController extends Controller
         $allTeachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
         $logged_user = Session::get('logged_user');
         $logged_role = Session::get('logged_role');
-        return view('portal_student', compact('students', 'degrees', 'teachers', 'courses', 'allTeachers', 'logged_user', 'logged_role'));
+        return view('student', compact('students', 'degrees', 'teachers', 'courses', 'allTeachers', 'logged_user', 'logged_role'));
     }
     public function index()
     {
@@ -99,10 +99,10 @@ class StudentController extends Controller
                         $teachers = Teacher::paginate(5);
                         $courses = Course::orderBy('course_name')->get();
                         $allTeachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
-                        return view('portal_student', compact('students', 'degrees', 'teachers', 'courses', 'allTeachers', 'logged_user', 'logged_role'));
+                        return view('student', compact('students', 'degrees', 'teachers', 'courses', 'allTeachers', 'logged_user', 'logged_role'));
                 }
            else {
-            return view('portal_student_dashboard')->with('students', $students)->with('degrees', $degrees)
+            return view('student_dashboard')->with('students', $students)->with('degrees', $degrees)
             ->with('logged_user', $logged_user)->with('logged_role', $logged_role);
         }
         // return view('student')->with('students', $students)->with('degrees', $degrees)
@@ -119,7 +119,7 @@ class StudentController extends Controller
     public function list()
     {
         $students = Student::with(['degree', 'userAccount'])->paginate(5);
-        return view('portal_student_list', compact('students'));
+        return view('student_list', compact('students'));
     }
 
     // $students = array(
@@ -141,7 +141,7 @@ class StudentController extends Controller
     public function create()
     {
         $degrees = Degree::orderBy('degree_name')->get();
-        return view('portal_addstudent', [
+        return view('addstudent', [
             'degrees' => $degrees,
         ]);
         // return "Showing form to create a new student";
@@ -286,7 +286,7 @@ class StudentController extends Controller
     public function show(string $id)
     {
         $student = Student::with('degree')->findOrFail($id);
-        return view('portal_student_details')->with('student', $student);
+        return view('student_details')->with('student', $student);
     }
 
     /**
@@ -298,7 +298,7 @@ class StudentController extends Controller
         $student = Student::with('userAccount')->findOrFail($id);
         $degrees = Degree::orderBy('degree_name')->get();
 
-        return view('portal_editstudent', [
+        return view('editstudent', [
             'student' => $student,
             'degrees' => $degrees,
             
@@ -472,3 +472,4 @@ class StudentController extends Controller
         // return "Deleting student";
     }
 }
+

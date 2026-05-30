@@ -21,7 +21,7 @@ class UserController extends Controller
      * Display a listing of the resource.
      */
     public function changePass(){
-        return view('portal_change_password');
+        return view('change_password');
     }
     public function index()
     {
@@ -56,7 +56,7 @@ class UserController extends Controller
                 ->get();
         }
 
-        return view('portal_student_dashboard', [
+        return view('student_dashboard', [
             'user' => $user,
             'logged_user' => $logged_user,
             'logged_role' => $logged_role,
@@ -113,7 +113,7 @@ class UserController extends Controller
                 ->get();
         }
 
-        return view('portal_teacher_dashboard', [
+        return view('teacher_dashboard', [
             'user' => $user,
             'logged_user' => $logged_user,
             'logged_role' => $logged_role,
@@ -144,7 +144,7 @@ class UserController extends Controller
             ->with(['degree', 'userAccount'])
             ->paginate(5);
 
-        return view('portal_attended', [
+        return view('attended', [
             'course' => $course,
             'students' => $students,
         ]);
@@ -188,7 +188,7 @@ class UserController extends Controller
             ->with(['degree', 'userAccount'])
             ->paginate(10);
 
-        return view('portal_student_course_details', [
+        return view('student_course_details', [
             'course' => $course,
             'attendance' => $attendance,
             'teacherName' => $teacherName,
@@ -210,7 +210,7 @@ class UserController extends Controller
     //             // $request->session()->put('user_id', $user->id);
     //             // $redirectUrl = url("/studentDashboard/{$user->id}/edit");
     //             // $msg = 'Login successful. Redirecting to students landing page...';
-    //             // return view('portal_login_success')->with('redirectUrl', $redirectUrl)->with('msg', $msg);
+    //             // return view('login_success')->with('redirectUrl', $redirectUrl)->with('msg', $msg);
     //             // session([
     //             // "logged_user" => $user->username,
     //             // "logged_id" => $user->id,
@@ -232,11 +232,11 @@ class UserController extends Controller
     //             $msg = 'Invalid username or password';
     //             Session::forget('logged_user');
     //             Session::flush();
-    //             return view('portal_login_page')->with('msg', $msg);
+    //             return view('login_page')->with('msg', $msg);
     //         }
     //     }
 
-    //     return view('portal_login_page');
+    //     return view('login_page');
     // }
     public function login(Request $request)
 {
@@ -301,12 +301,12 @@ class UserController extends Controller
             $msg = 'Invalid username or password';
             Session::forget('logged_user');
             Session::flush();
-            return view('portal_login_page')->with('msg', $msg);
+            return view('login_page')->with('msg', $msg);
         }
     }
 
     // GET request – show login page
-    return view('portal_login_page');
+    return view('login_page');
 }
     public function logout(Request $request)
     {
@@ -345,7 +345,7 @@ class UserController extends Controller
         //
          $user = UserAccount::find($id);
       
-        return view('portal_change_password', [
+        return view('change_password', [
             'user' => $user,
             
         ]);
@@ -420,3 +420,4 @@ class UserController extends Controller
         //
     }
 }
+

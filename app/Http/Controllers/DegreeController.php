@@ -16,7 +16,7 @@ class DegreeController extends Controller
     {
         $degrees = Degree::orderBy('degree_name')->paginate(10);
 
-        return view('portal_degree', [
+        return view('degree', [
             'degrees' => $degrees,
         ]);
     }
@@ -26,7 +26,7 @@ class DegreeController extends Controller
      */
     public function create()
     {
-        return view('portal_adddegree');
+        return view('adddegree');
     }
 
     /**
@@ -65,7 +65,7 @@ class DegreeController extends Controller
     {
         $degree = Degree::findOrFail($id);
 
-        return view('portal_degree_details', [
+        return view('degree_details', [
             'degree' => $degree,
         ]);
     }
@@ -77,7 +77,7 @@ class DegreeController extends Controller
     {
         $degree = Degree::findOrFail($id);
 
-        return view('portal_editdegree', [
+        return view('editdegree', [
             'degree' => $degree,
         ]);
     }
@@ -124,3 +124,4 @@ class DegreeController extends Controller
         return redirect()->route('degree.index');
     }
 }
+

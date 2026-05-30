@@ -19,7 +19,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        return view('portal_course');
+        return view('course');
     }
 
     /**
@@ -28,7 +28,7 @@ class CourseController extends Controller
     public function list()
     {
         $courses = Course::orderBy('course_name')->paginate(10);
-        return view('portal_course_list', compact('courses'));
+        return view('course_list', compact('courses'));
     }
 
     /**
@@ -36,7 +36,7 @@ class CourseController extends Controller
      */
     public function create()
     {
-        return view('portal_addcourse');
+        return view('addcourse');
     }
 
     /**
@@ -73,7 +73,7 @@ class CourseController extends Controller
     public function edit(string $id)
     {
         $course = Course::findOrFail($id);
-        return view('portal_editcourse', compact('course'));
+        return view('editcourse', compact('course'));
     }
 
     /**
@@ -207,7 +207,7 @@ class CourseController extends Controller
         $courses = Course::orderBy('course_name')->get();
         $teachers = Teacher::orderBy('first_name')->orderBy('last_name')->get();
 
-        return view('portal_attendance', compact('courses', 'teachers'));
+        return view('attendance', compact('courses', 'teachers'));
     }
 
     /**
@@ -233,7 +233,7 @@ class CourseController extends Controller
         }
 
         $students = $studentsQuery->orderBy('last_name')->orderBy('first_name')->paginate(10);
-        return view('portal_attendance_students', compact('students'));
+        return view('attendance_students', compact('students'));
     }
 
     /**
@@ -288,3 +288,4 @@ class CourseController extends Controller
         ]);
     }
 }
+
